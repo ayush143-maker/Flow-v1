@@ -4,12 +4,13 @@
  * Source of truth: src/assets/brand/logo.svg
  *
  * Generates:
- *   public/favicon.svg                                   — web preview favicon
- *   android/…/res/mipmap-*/ic_launcher.png               — legacy square icon (white bg)
- *   android/…/res/mipmap-*/ic_launcher_round.png         — legacy round icon (white disc)
- *   android/…/res/mipmap-*/ic_launcher_foreground.png    — adaptive foreground (transparent)
- *   android/…/res/mipmap-anydpi-v26/ic_launcher*.xml     — adaptive icon defs (white bg)
- *   android/…/res/drawable*/splash.png                   — launch splash (white, centered mark)
+ *   - public/favicon.svg                                  (web preview favicon)
+ *   - android res/mipmap, all densities:
+ *       ic_launcher.png            legacy square icon, pure white background
+ *       ic_launcher_round.png      legacy round icon, white disc
+ *       ic_launcher_foreground.png adaptive foreground, transparent
+ *   - android res/mipmap-anydpi-v26: adaptive icon XML (white background color)
+ *   - android res/drawable, all densities: splash.png (white, centered mark)
  *
  * Safe to re-run at any time; output is deterministic.
  */
