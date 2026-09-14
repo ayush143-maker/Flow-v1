@@ -44,7 +44,7 @@ export function getIcon(name?: string): LucideIcon {
   return (name && ICONS[name]) || ICONS.others;
 }
 
-/** merchantNormalized → icon key */
+/** merchantNormalized → icon key (spaces wale keys quoted hain — TS rule) */
 const MERCHANT_ICON: Record<string, string> = {
   SWIGGY: 'food',
   ZOMATO: 'food',
@@ -61,7 +61,7 @@ const MERCHANT_ICON: Record<string, string> = {
   NETFLIX: 'tv',
   SPOTIFY: 'music',
   'YOUTUBE PREMIUM': 'play',
-  "GOLDS GYM": 'dumbbell',
+  'GOLDS GYM': 'dumbbell',
   'APOLLO PHARMACY': 'pill',
   IRCTC: 'train',
   'INDIAN OIL': 'fuel',
@@ -70,7 +70,7 @@ const MERCHANT_ICON: Record<string, string> = {
   'UPI TRANSFER': 'transfers',
   'SALARY CREDIT': 'briefcase',
   'AMAZON REFUND': 'refund',
-  PHONEPE CASHBACK: 'wallet',
+  'PHONEPE CASHBACK': 'wallet',
   'IMPS CREDIT': 'landmark',
 };
 
