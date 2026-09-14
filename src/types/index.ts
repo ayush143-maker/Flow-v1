@@ -23,6 +23,7 @@ export interface TransactionMetadata {
   bank?: string;
   instrument?: string;
   upiVpa?: string;
+  sender?: string;
   extra?: Record<string, string>;
 }
 
@@ -76,8 +77,11 @@ export type RecurrenceFrequency = 'weekly' | 'monthly' | 'quarterly' | 'yearly';
 export interface RecurringPayment {
   id: string;
   merchant: string;
+  /** Normalized merchant key — matches Transaction.merchantNormalized. */
+  merchantNormalized: string;
   amountMinor: number;
   frequency: RecurrenceFrequency;
+  /** ISO 8601 date of the most recent matching transaction. */
   lastSeen: string;
   /** Null when there isn't enough evidence — estimates are always marked. */
   nextExpected: string | null;
