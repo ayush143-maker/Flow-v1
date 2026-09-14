@@ -11,7 +11,6 @@ export function DeveloperToolsScreen() {
   const nav = useNav();
   const [engine, setEngine] = useState<EngineInfo | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [confirmClear, setConfirmClear] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
 
   useEffect(() => {
@@ -58,7 +57,6 @@ export function DeveloperToolsScreen() {
           onClick={() => {
             addTestTransactions();
             setFeedback('Added 50 test transactions (last 10 days).');
-            setConfirmClear(false);
           }}
         >
           Generate 50 test transactions
@@ -69,7 +67,6 @@ export function DeveloperToolsScreen() {
           onClick={() => {
             clearTestData();
             setFeedback('Test data cleared.');
-            setConfirmClear(false);
           }}
           disabled={stats.test === 0}
         >
