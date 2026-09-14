@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { App, type AppStateChange } from '@capacitor/app';
+import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import logoUrl from '@/assets/brand/logo.svg';
@@ -65,7 +65,7 @@ export function AppRoot() {
     let disposed = false;
     let handle: { remove(): void } | undefined;
     let wasActive = true;
-    void App.addListener('appStateChange', (state: AppStateChange) => {
+    void App.addListener('appStateChange', (state) => {
       if (state.isActive && !wasActive) setUnlocked(false);
       wasActive = state.isActive;
     }).then((h) => {
