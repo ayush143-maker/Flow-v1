@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Bell, Database, MessageSquare, Trash2 } from 'lucide-react';
 import { useAppStore } from '@/services/store/AppStoreProvider';
 import { useNav } from '@/navigation/NavigationProvider';
-import { getEngineInfo, type EngineInfo } from '@/services/native/flow-core';
+import {
+  generateTestSms,
+  getEngineInfo,
+  runParserTests,
+  syncSms,
+  type EngineInfo,
+  type ParserTestResult,
+} from '@/services/native/flow-core';
 import { Button, ScreenHeader } from '@/components/ui';
 import { dateShort } from '@/utils/format';
 
@@ -11,6 +18,8 @@ export function DeveloperToolsScreen() {
   const nav = useNav();
   const [engine, setEngine] = useState<EngineInfo | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [parserResult, setParserResult] = useState<ParserTestResult | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
 
   useEffect(() => {
@@ -38,6 +47,17 @@ export function DeveloperToolsScreen() {
     };
   }, [transactions]);
 
+  const runOp = (label: string, op: () => Promise<string>) => {
+    setBusy(true);
+    setParserResult(null);
+    void op()
+      .then((msg) => setFeedback(`${label}: ${msg}`))
+      .catch((err) =>
+        setFeedback(`${label} failed: ${err instanceof Error ? err.message : String(err)}`),
+      )
+      .finally(() => setBusy(false));
+  };
+
   return (
     <div className="pad dev">
       <ScreenHeader title="Developer tools" onBack={nav.pop} />
@@ -51,15 +71,79 @@ export function DeveloperToolsScreen() {
       </div>
 
       <div className="card dev-card">
+        <h4 className="dev-title">SMS engine (real parser)</h4>
+        <Button
+          block
+          disabled={busy}
+          onClick={() =>
+            runOp('SMS sync', async () => {
+              const r = await syncSms();
+              if (!r.permissionGranted) {
+                return 'SMS permission not granted — allow it from Settings → Permissions first.';
+              }
+              return `scanned ${r.scanned}, parsed ${r.parsed}, inserted ${r.inserted}, duplicates ${r.duplicates}`;
+            })
+          }
+        >
+          <MessageSquare size={15} /> Sync SMS now
+        </Button>
+        <Button
+          block
+          variant="secondary"
+          disabled={busy}
+          onClick={() =>
+            runOp('Test SMS', async () => {
+              const r = await generateTestSms();
+              if (r.inserted === 0 && !engine?.native) {
+                return 'runs in the Android app (web preview here).';
+              }
+              return r.inserted > 0
+                ? `${r.inserted} transactions inserted via the real parser (flagged as test).`
+                : 'nothing new — this day already has these test messages. Clear test data and retry.';
+            })
+          }
+        >
+          Generate test SMS (parser)
+        </Button>
+        <Button
+          block
+          variant="secondary"
+          disabled={busy}
+          onClick={() =>
+            runOp('Parser suite', async () => {
+              const r = await runParserTests();
+              setParserResult(r);
+              if (r.total === 0) return 'runs in the Android app (web preview here).';
+              return r.failures.length === 0
+                ? `all ${r.total} cases passed`
+                : `${r.passed}/${r.total} passed`;
+            })
+          }
+        >
+          Run parser test suite
+        </Button>
+        {parserResult && parserResult.failures.length > 0 && (
+          <ul className="dev-failures">
+            {parserResult.failures.map((f, i) => (
+              <li key={i}>
+                <span className="dev-fail-msg">{f.message}</span>
+                <span className="dev-fail-reason">{f.reason}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="card dev-card">
         <h4 className="dev-title">Test data</h4>
         <Button
           block
           onClick={() => {
             addTestTransactions();
-            setFeedback('Added 50 test transactions (last 10 days).');
+            setFeedback('Added 50 mock test transactions (last 10 days).');
           }}
         >
-          Generate 50 test transactions
+          Generate 50 mock transactions
         </Button>
         <Button
           block
@@ -91,18 +175,14 @@ export function DeveloperToolsScreen() {
       </div>
 
       <div className="card dev-card">
-        <h4 className="dev-title">Parser tools</h4>
-        <div className="dev-pending">
-          <MessageSquare size={16} />
-          <span>Generate test SMS — ships with the native SMS engine (next batch).</span>
-        </div>
+        <h4 className="dev-title">Coming in the next batch</h4>
         <div className="dev-pending">
           <Bell size={16} />
-          <span>Generate test notification — ships with the notification listener (next batch).</span>
+          <span>Notification listener — reads bank/payment app notifications (Phase 5).</span>
         </div>
         <div className="dev-pending">
           <Database size={16} />
-          <span>Parser test suite — ships with the Kotlin parser + JUnit tests (next batch).</span>
+          <span>Cross-source duplicate detection — SMS vs notification matching (Phase 6).</span>
         </div>
       </div>
 
