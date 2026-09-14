@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import {
   Bell, ChevronRight, Database, Download, FlaskConical, Info, KeyRound, LayoutGrid,
-  ListChecks, MessageSquare, Repeat, ShieldCheck, User, HardDrive,
+  ListChecks, MessageSquare, Repeat, ShieldCheck, HardDrive,
 } from 'lucide-react';
 import logoUrl from '@/assets/brand/logo.svg';
 import { useAppStore } from '@/services/store/AppStoreProvider';
@@ -12,8 +12,9 @@ import { detectRecurring } from '@/services/analytics/recurring';
 import { APP_NAME, APP_TAGLINE, APP_VERSION } from '@/app-info';
 
 export function SettingsScreen() {
-  const { profile, updateName, rules, transactions, settings, setNotificationsEnabled } =
-    useAppStore();
+  const {
+    profile, updateName, rules, transactions, categories, settings, setNotificationsEnabled,
+  } = useAppStore();
   const nav = useNav();
   const perms = usePermissions();
   const [editOpen, setEditOpen] = useState(false);
@@ -100,7 +101,7 @@ export function SettingsScreen() {
 
       <h4 className="set-group-title">Manage</h4>
       <div className="card">
-        <SetLink icon={<LayoutGrid size={19} />} label="Categories" value="12+" onClick={() => nav.push({ name: 'categories' })} />
+        <SetLink icon={<LayoutGrid size={19} />} label="Categories" value={String(categories.length)} onClick={() => nav.push({ name: 'categories' })} />
         <SetLink icon={<ListChecks size={19} />} label="Merchant rules" value={String(rules.length)} onClick={() => nav.push({ name: 'merchant-rules' })} />
         <SetLink icon={<Repeat size={19} />} label="Recurring payments" value={String(recurringCount)} onClick={() => nav.push({ name: 'recurring' })} />
       </div>
@@ -184,7 +185,7 @@ function SetLink({
   value,
   onClick,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value?: string;
   onClick: () => void;
