@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flow">
+  <title>Flow</title>
+  <defs>
+    <linearGradient id="flowGradient" x1="136" y1="118" x2="380" y2="394" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2FD6B3" />
+      <stop offset="0.5" stop-color="#4FB0EC" />
+      <stop offset="1" stop-color="#7C6CF0" />
+    </linearGradient>
+  </defs>
+  <g fill="url(#flowGradient)">
+    <!-- Stylized “F” built from three flowing bars: current, momentum, flow. -->
+    <rect x="136" y="118" width="58"  height="276" rx="29" />
+    <rect x="136" y="118" width="244" height="58"  rx="29" />
+    <rect x="136" y="227" width="176" height="58"  rx="29" />
+  </g>
+</svg>
