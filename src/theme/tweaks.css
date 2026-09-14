@@ -1,0 +1,21 @@
+/* ==========================================================================
+   Flow — incremental visual tweaks (Phase 3)
+   Small polish layers shipped between refactors; merged into screens.css
+   periodically. Loaded AFTER screens.css, so later rules win.
+   ========================================================================== */
+
+/* Spacious top breathing room below the status bar (bankme-style header) */
+.pad {
+  padding-top: 28px;
+}
+
+/* Calmer, larger page titles */
+.screen-title {
+  font-size: 26px;
+  letter-spacing: -0.035em;
+}
+
+/* Airier section cards */
+.section {
+  padding-top: 20px;
+}
