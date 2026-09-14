@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Flow adaptive-icon background: pure white by design.
+         Uniquely named so it can never collide with Android template resources. -->
+    <color name="flow_launcher_background">#FFFFFF</color>
+</resources>
