@@ -1,4 +1,4 @@
-/* Flow — UI primitives */
+/* Flow — UI primitives (bankme aesthetic: charcoal buttons, sage accents) */
 
 .btn {
   display: inline-flex;
@@ -6,7 +6,7 @@
   justify-content: center;
   gap: 8px;
   border: none;
-  border-radius: 14px;
+  border-radius: 18px;
   font-weight: 600;
   letter-spacing: 0.01em;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease,
@@ -21,9 +21,9 @@
 }
 
 .btn--primary {
-  background: var(--brand-gradient);
-  color: #fff;
-  box-shadow: 0 8px 20px rgba(47, 176, 236, 0.28);
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: 0 6px 18px rgba(30, 35, 33, 0.18);
 }
 .btn--secondary {
   background: var(--surface);
@@ -40,17 +40,17 @@
   border: 1px solid var(--danger);
 }
 
-.btn--sm { padding: 8px 14px; font-size: 13px; }
-.btn--md { padding: 13px 20px; font-size: 15px; }
-.btn--lg { padding: 16px 24px; font-size: 16px; border-radius: 16px; }
+.btn--sm { padding: 9px 16px; font-size: 13px; }
+.btn--md { padding: 14px 20px; font-size: 15px; }
+.btn--lg { padding: 17px 24px; font-size: 16px; border-radius: 22px; }
 .btn--block { width: 100%; }
 
 .btn-spinner {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
+  border: 2px solid rgba(127, 127, 127, 0.35);
+  border-top-color: currentColor;
   animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -61,7 +61,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: 14px;
   background: transparent;
   color: var(--ink);
   border: none;
@@ -70,7 +70,7 @@
 .icon-btn:active { background: var(--surface-2); }
 
 .chip {
-  padding: 7px 14px;
+  padding: 8px 15px;
   border-radius: var(--radius-full);
   border: 1px solid var(--line-strong);
   background: var(--surface);
@@ -82,20 +82,20 @@
 }
 .chip.is-on {
   background: var(--ink);
-  color: var(--surface);
+  color: var(--bg);
   border-color: var(--ink);
 }
 
 .segmented {
   display: flex;
-  background: var(--surface-2);
+  background: var(--surface-3);
   border-radius: var(--radius-full);
   padding: 4px;
   gap: 2px;
 }
 .segmented-item {
   flex: 1;
-  padding: 8px 10px;
+  padding: 9px 10px;
   border: none;
   background: transparent;
   border-radius: var(--radius-full);
@@ -120,7 +120,7 @@
   transition: background 0.2s ease;
   flex-shrink: 0;
 }
-.switch.is-on { background: var(--brand-mint); }
+.switch.is-on { background: var(--accent); }
 .switch-knob {
   position: absolute;
   top: 3px;
@@ -150,7 +150,7 @@
   max-height: 86vh;
   overflow-y: auto;
   background: var(--surface);
-  border-radius: 24px 24px 0 0;
+  border-radius: 28px 28px 0 0;
   padding: 10px 20px calc(24px + env(safe-area-inset-bottom));
   animation: sheet-up 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -176,17 +176,17 @@
   align-items: center;
   text-align: center;
   gap: 10px;
-  padding: 44px 24px;
+  padding: 48px 24px;
 }
 .empty-icon {
   width: 56px;
   height: 56px;
-  border-radius: 18px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--brand-gradient-soft);
-  color: var(--brand-azure);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
   margin-bottom: 4px;
 }
 .empty-title { font-size: 16px; font-weight: 700; }
@@ -201,7 +201,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 8px 14px;
+  padding: 10px 8px 16px;
 }
 .screen-header-spacer { width: 40px; }
 .screen-header-title {
@@ -214,8 +214,8 @@
 
 .input {
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 14px;
+  padding: 15px 16px;
+  border-radius: 16px;
   border: 1.5px solid var(--line-strong);
   background: var(--surface);
   color: var(--ink);
@@ -223,5 +223,5 @@
   outline: none;
   transition: border-color 0.15s ease;
 }
-.input:focus { border-color: var(--brand-mint); }
+.input:focus { border-color: var(--accent); }
 .input::placeholder { color: var(--ink-3); }
