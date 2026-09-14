@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import '@fontsource-variable/inter';
 import '@/theme/global.css';
 import '@/theme/screens.css';
-import '@/theme/tweaks.css';
 import App from '@/App';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
