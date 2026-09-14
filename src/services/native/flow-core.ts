@@ -3,8 +3,8 @@ import type { AppSettings, Category, MerchantRule, Profile, Transaction } from '
 
 /**
  * FlowCore — the single custom native plugin (Kotlin, android app module).
- * It owns SQLite storage (Phase 3), and later the SMS reader, the notification
- * listener, the transaction parser and duplicate detection. Every method is
+ * It owns SQLite storage (Phase 3), the SMS reader + parser (Phase 4), and
+ * later the notification listener and cross-source dedup. Every method is
  * typed here so the UI never guesses.
  */
 
@@ -27,7 +27,26 @@ export interface NotifListenerStatus {
   enabled: boolean;
 }
 
-/** Full app state in one bridge call — the React store mirrors this. */
+/** One SMS sync pass: inbox rows scanned vs transactions stored. */
+export interface SmsSyncResult {
+  permissionGranted: boolean;
+  scanned: number;
+  parsed: number;
+  inserted: number;
+  duplicates: number;
+}
+
+export interface ParserTestFailure {
+  message: string;
+  reason: string;
+}
+
+export interface ParserTestResult {
+  total: number;
+  passed: number;
+  failures: ParserTestFailure[];
+}
+
 export interface StoreSnapshot {
   profile: Profile | null;
   settings: AppSettings;
@@ -56,6 +75,10 @@ export interface FlowCorePlugin extends Plugin {
   requestSmsPermission(): Promise<SmsRequestResult>;
   openNotificationSettings(): Promise<void>;
   isNotificationListenerEnabled(): Promise<NotifListenerStatus>;
+
+  syncSms(): Promise<SmsSyncResult>;
+  generateTestSms(): Promise<InsertResult>;
+  runParserTests(): Promise<ParserTestResult>;
 
   getSnapshot(): Promise<StoreSnapshot>;
   saveProfile(options: { name: string }): Promise<void>;
@@ -101,4 +124,16 @@ export function openNotificationSettings(): Promise<void> {
 
 export async function isNotificationListenerEnabled(): Promise<boolean> {
   return (await FlowCore.isNotificationListenerEnabled()).enabled;
+}
+
+export function syncSms(): Promise<SmsSyncResult> {
+  return FlowCore.syncSms();
+}
+
+export function generateTestSms(): Promise<InsertResult> {
+  return FlowCore.generateTestSms();
+}
+
+export function runParserTests(): Promise<ParserTestResult> {
+  return FlowCore.runParserTests();
 }
