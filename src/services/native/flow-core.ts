@@ -1,10 +1,11 @@
 import { registerPlugin, type Plugin } from '@capacitor/core';
+import type { AppSettings, Category, MerchantRule, Profile, Transaction } from '@/types';
 
 /**
  * FlowCore — the single custom native plugin (Kotlin, android app module).
- * It owns SMS ingestion, the notification listener, the transaction parser,
- * duplicate detection and SQLite. Its method surface grows phase by phase;
- * every method is typed here so the UI never guesses.
+ * It owns SQLite storage (Phase 3), and later the SMS reader, the notification
+ * listener, the transaction parser and duplicate detection. Every method is
+ * typed here so the UI never guesses.
  */
 
 export interface EngineInfo {
@@ -26,22 +27,61 @@ export interface NotifListenerStatus {
   enabled: boolean;
 }
 
+/** Full app state in one bridge call — the React store mirrors this. */
+export interface StoreSnapshot {
+  profile: Profile | null;
+  settings: AppSettings;
+  categories: Category[];
+  rules: MerchantRule[];
+  transactions: Transaction[];
+  totalTransactions: number;
+  truncated: boolean;
+}
+
+export interface InsertResult {
+  inserted: number;
+}
+
+export interface AddCategoryResult {
+  added: boolean;
+}
+
+export interface ClearTestDataResult {
+  deleted: number;
+}
+
 export interface FlowCorePlugin extends Plugin {
-  /** Health check — proves the native bridge is live. */
   getEngineInfo(): Promise<EngineInfo>;
-  /** Live READ_SMS state (polled after system dialogs / resume). */
   checkSmsPermission(): Promise<PermissionStatus>;
-  /** Opens the Android runtime permission dialog for SMS. */
   requestSmsPermission(): Promise<SmsRequestResult>;
-  /** Opens the special-access Notification access screen in Settings. */
   openNotificationSettings(): Promise<void>;
-  /** Whether the user enabled our notification listener. */
   isNotificationListenerEnabled(): Promise<NotifListenerStatus>;
+
+  getSnapshot(): Promise<StoreSnapshot>;
+  saveProfile(options: { name: string }): Promise<void>;
+  setSettings(options: { settings: AppSettings }): Promise<void>;
+  insertTransactions(options: {
+    transactions: Transaction[];
+    mode: 'append' | 'replaceAll';
+  }): Promise<InsertResult>;
+  applyCategory(options: { txnId: string; category: string }): Promise<void>;
+  addCategory(options: { name: string; icon: string; color: string }): Promise<AddCategoryResult>;
+  updateCategory(options: {
+    id: string;
+    name?: string;
+    icon?: string;
+    color?: string;
+  }): Promise<void>;
+  deleteCategory(options: { id: string }): Promise<void>;
+  deleteRule(options: { id: string }): Promise<void>;
+  clearTestData(): Promise<ClearTestDataResult>;
 }
 
 const FlowCore = registerPlugin<FlowCorePlugin>('FlowCore', {
   web: () => import('./flow-core-web').then((m) => new m.FlowCoreWeb()),
 });
+
+export { FlowCore };
 
 export function getEngineInfo(): Promise<EngineInfo> {
   return FlowCore.getEngineInfo();
