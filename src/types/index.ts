@@ -21,7 +21,6 @@ export type PaymentMethod =
 
 export interface TransactionMetadata {
   bank?: string;
-  /** e.g. "HDFC Credit Card xx1234" or "A/c XX5678" */
   instrument?: string;
   upiVpa?: string;
   extra?: Record<string, string>;
@@ -55,7 +54,7 @@ export interface Transaction {
 export interface Category {
   id: string;
   name: string;
-  /** Lucide icon name. */
+  /** Icon key resolved in src/components/icons.tsx. */
   icon: string;
   color: string;
   isCustom: boolean;
@@ -79,7 +78,6 @@ export interface RecurringPayment {
   merchant: string;
   amountMinor: number;
   frequency: RecurrenceFrequency;
-  /** ISO 8601 date of the most recent matching transaction. */
   lastSeen: string;
   /** Null when there isn't enough evidence — estimates are always marked. */
   nextExpected: string | null;
@@ -89,4 +87,12 @@ export interface RecurringPayment {
 export interface Profile {
   name: string;
   createdAt: string;
+}
+
+export interface AppSettings {
+  onboarded: boolean;
+  smsGranted: boolean;
+  notificationsEnabled: boolean;
+  appLockEnabled: boolean;
+  pinHash: string | null;
 }
