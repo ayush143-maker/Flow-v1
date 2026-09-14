@@ -10,9 +10,12 @@
  *      (manifest, Kotlin sources, values resources).
  *   2. Removes the template's generated Java MainActivity (we ship Kotlin).
  *   3. Patches android/build.gradle to add the Kotlin Gradle plugin.
- *   4. Patches android/app/build.gradle: Kotlin plugin + matching Java/Kotlin
- *      compile targets (prevents Gradle's "Inconsistent JVM-target
- *      compatibility" failure).
+ *   4. Patches android/app/build.gradle: Kotlin plugin + Java/Kotlin both at 21.
+ *
+ * Why 21: Capacitor 7 targets Java 21 — its generated capacitor.build.gradle
+ * re-asserts compileOptions 21 AFTER our blocks run (later Groovy config wins).
+ * So the only consistent setup is Java 21 AND Kotlin jvmTarget 21, matching the
+ * JDK 21 that CI uses. Anything else = "Inconsistent JVM-target compatibility".
  *
  * Deterministic + idempotent: safe to run again over an already-patched tree.
  */
@@ -32,9 +35,9 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const FILES_DIR = join(ROOT, 'android-overlay/files');
 const ANDROID_DIR = join(ROOT, 'android');
 const KOTLIN_VERSION = '2.1.20';
-// Java 17 bytecode: Gradle runs on JDK 21 (can emit 17), Kotlin fully supports
-// it, and it matches Capacitor's own Android library level.
-const JAVA_VERSION = '17';
+// MUST be 21: matches Capacitor 7's own Java level and the CI JDK.
+// See the header comment above before changing this.
+const JAVA_VERSION = '21';
 
 const REQUIRED_AFTER_COPY = [
   'app/src/main/AndroidManifest.xml',
@@ -112,7 +115,7 @@ if (!rootGradle.includes('kotlin-gradle-plugin')) {
   console.log('  ~ android/build.gradle: Kotlin plugin added');
 }
 
-// 4) Patch android/app/build.gradle — Kotlin plugin + consistent compile targets.
+// 4) Patch android/app/build.gradle — Kotlin plugin + both targets at 21.
 const appGradlePath = join(ANDROID_DIR, 'app/build.gradle');
 if (!existsSync(appGradlePath)) fail('android/app/build.gradle not found.');
 let appGradle = readFileSync(appGradlePath, 'utf8');
@@ -127,9 +130,9 @@ if (!appGradle.includes('org.jetbrains.kotlin.android')) {
 }
 
 // Remove any existing compileOptions / kotlinOptions blocks (the template's or
-// a previous run's), then insert ONE consistent pair. This guarantees Java and
-// Kotlin emit the same bytecode version — otherwise Gradle fails with
-// "Inconsistent JVM-target compatibility detected".
+// a previous run's), then insert ONE consistent pair — both at JAVA_VERSION.
+// Capacitor's capacitor.build.gradle (applied last) also sets Java 21, so
+// JAVA_VERSION must stay 21 to remain consistent with it.
 appGradle = `${appGradle
   .replace(/compileOptions\s*\{[^}]*\}/, '')
   .replace(/kotlinOptions\s*\{[^}]*\}/, '')
