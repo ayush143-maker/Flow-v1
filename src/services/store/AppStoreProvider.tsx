@@ -3,56 +3,39 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
-import { KEYS, loadJSON, saveJSON } from './persistence';
-import { DEFAULT_CATEGORIES } from '@/theme/tokens';
+import {
+  createBackend,
+  DEFAULT_SETTINGS,
+  migrateLegacyPreferences,
+  type StoreBackend,
+} from './backends';
 import { generateMockTransactions, generateTestTransactions } from '@/services/mock/generate';
-import { newId, normalizeMerchant } from '@/utils/format';
-import type {
-  AppSettings,
-  Category,
-  MerchantRule,
-  Profile,
-  Transaction,
-} from '@/types';
+import type { StoreSnapshot } from '@/services/native/flow-core';
+import type { AppSettings, Profile } from '@/types';
 
-const DEFAULT_SETTINGS: AppSettings = {
-  onboarded: false,
-  smsGranted: false,
-  notificationsEnabled: true,
-  appLockEnabled: false,
-  pinHash: null,
+export { normalizeMerchant } from '@/utils/format';
+
+const EMPTY_SNAPSHOT: StoreSnapshot = {
+  profile: null,
+  settings: { ...DEFAULT_SETTINGS },
+  categories: [],
+  rules: [],
+  transactions: [],
+  totalTransactions: 0,
+  truncated: false,
 };
-
-function defaultCategories(): Category[] {
-  return DEFAULT_CATEGORIES.map((c) => ({
-    id: newId('c'),
-    name: c.name,
-    icon: c.icon,
-    color: c.color,
-    isCustom: false,
-    createdAt: new Date().toISOString(),
-  }));
-}
-
-function usePersist<T>(enabled: boolean, key: string, value: T): void {
-  useEffect(() => {
-    if (!enabled) return;
-    const id = window.setTimeout(() => {
-      void saveJSON(key, value);
-    }, 250);
-    return () => window.clearTimeout(id);
-  }, [enabled, key, value]);
-}
 
 export interface AppStore {
   ready: boolean;
   profile: Profile | null;
-  transactions: Transaction[];
-  categories: Category[];
-  rules: MerchantRule[];
+  transactions: StoreSnapshot['transactions'];
+  categories: StoreSnapshot['categories'];
+  rules: StoreSnapshot['rules'];
   settings: AppSettings;
   saveProfile(name: string): void;
   finishOnboarding(): void;
@@ -73,173 +56,231 @@ export interface AppStore {
 const AppStoreContext = createContext<AppStore | null>(null);
 
 export function AppStoreProvider({ children }: { children: ReactNode }) {
+  const backend = useMemo<StoreBackend>(() => createBackend(), []);
   const [ready, setReady] = useState(false);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [rules, setRules] = useState<MerchantRule[]>([]);
-  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+  const [snap, setSnap] = useState<StoreSnapshot>(EMPTY_SNAPSHOT);
+  const snapRef = useRef(snap);
+  snapRef.current = snap;
 
+  // Boot: migrate old Preferences data (native), load the snapshot and seed
+  // demo transactions when the store is empty (first launch).
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const [p, t, c, r, s] = await Promise.all([
-        loadJSON<Profile>(KEYS.profile),
-        loadJSON<Transaction[]>(KEYS.transactions),
-        loadJSON<Category[]>(KEYS.categories),
-        loadJSON<MerchantRule[]>(KEYS.rules),
-        loadJSON<AppSettings>(KEYS.settings),
-      ]);
-      if (cancelled) return;
-      setProfile(p);
-      setCategories(c ?? defaultCategories());
-      setSettings({ ...DEFAULT_SETTINGS, ...s });
-      if (t && t.length > 0) {
-        setTransactions(t);
-        setRules(r ?? []);
-      } else {
-        const seeded = generateMockTransactions();
-        setTransactions(seeded);
-        setRules([]);
-        void saveJSON(KEYS.transactions, seeded);
+      try {
+        await migrateLegacyPreferences(backend);
+        let loaded = await backend.loadSnapshot();
+        if (loaded.transactions.length === 0) {
+          await backend.insertTransactions(generateMockTransactions(), 'replaceAll');
+          loaded = await backend.loadSnapshot();
+        }
+        if (!cancelled) {
+          setSnap(loaded);
+          setReady(true);
+        }
+      } catch (err) {
+        console.error('[Flow] store init failed', err);
+        if (!cancelled) setReady(true); // app still renders with empty states
       }
-      setReady(true);
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [backend]);
 
-  usePersist(ready, KEYS.profile, profile);
-  usePersist(ready, KEYS.transactions, transactions);
-  usePersist(ready, KEYS.categories, categories);
-  usePersist(ready, KEYS.rules, rules);
-  usePersist(ready, KEYS.settings, settings);
+  const refresh = useCallback(async () => {
+    try {
+      setSnap(await backend.loadSnapshot());
+    } catch (err) {
+      console.error('[Flow] refresh failed', err);
+    }
+  }, [backend]);
 
-  const saveProfile = useCallback((name: string) => {
-    setProfile({ name: name.trim(), createdAt: new Date().toISOString() });
-  }, []);
+  /** Run a backend mutation, then re-load the snapshot (single code path). */
+  const run = useCallback(
+    (op: () => Promise<unknown>) => {
+      void op()
+        .then(() => refresh())
+        .catch((err) => console.error('[Flow] mutation failed', err));
+    },
+    [refresh],
+  );
+
+  const patchSettings = useCallback(
+    (patch: Partial<AppSettings>) => {
+      const next = { ...snapRef.current.settings, ...patch };
+      setSnap((s) => ({ ...s, settings: next }));
+      run(() => backend.setSettings(next));
+    },
+    [backend, run],
+  );
+
+  const saveProfile = useCallback(
+    (name: string) => {
+      const clean = name.trim();
+      setSnap((s) => ({
+        ...s,
+        profile: { name: clean, createdAt: s.profile?.createdAt ?? new Date().toISOString() },
+      }));
+      run(() => backend.saveProfile(clean));
+    },
+    [backend, run],
+  );
 
   const finishOnboarding = useCallback(() => {
-    setSettings((s) => ({ ...s, onboarded: true }));
-  }, []);
+    patchSettings({ onboarded: true });
+  }, [patchSettings]);
 
-  const updateName = useCallback((name: string) => {
-    setProfile((p) => (p ? { ...p, name: name.trim() } : p));
-  }, []);
+  const updateName = useCallback(
+    (name: string) => saveProfile(name),
+    [saveProfile],
+  );
 
-  const setSmsGranted = useCallback((v: boolean) => {
-    setSettings((s) => ({ ...s, smsGranted: v }));
-  }, []);
+  const setSmsGranted = useCallback(
+    (v: boolean) => patchSettings({ smsGranted: v }),
+    [patchSettings],
+  );
 
-  const setNotificationsEnabled = useCallback((v: boolean) => {
-    setSettings((s) => ({ ...s, notificationsEnabled: v }));
-  }, []);
+  const setNotificationsEnabled = useCallback(
+    (v: boolean) => patchSettings({ notificationsEnabled: v }),
+    [patchSettings],
+  );
 
-  const setAppLock = useCallback((enabled: boolean, pinHash: string | null) => {
-    setSettings((s) => ({ ...s, appLockEnabled: enabled, pinHash }));
-  }, []);
+  const setAppLock = useCallback(
+    (enabled: boolean, pinHash: string | null) =>
+      patchSettings({ appLockEnabled: enabled, pinHash }),
+    [patchSettings],
+  );
 
-  const applyCategory = useCallback((txnId: string, category: string) => {
-    setTransactions((prev) => {
-      const txn = prev.find((t) => t.id === txnId);
-      if (!txn || txn.category === category) return prev;
-      const key = txn.merchantNormalized;
-      return prev.map((t) =>
-        t.merchantNormalized === key && t.category !== category ? { ...t, category } : t,
-      );
-    });
-    setRules((prev) => {
-      const txn = transactions.find((t) => t.id === txnId);
-      if (!txn) return prev;
-      const key = txn.merchantNormalized;
-      const existing = prev.find((r) => r.merchantNormalized === key);
-      const rule: MerchantRule = existing
-        ? { ...existing, category, hitCount: existing.hitCount + 1, updatedAt: new Date().toISOString() }
-        : {
-            id: newId('r'),
-            merchantNormalized: key,
-            merchantDisplay: txn.merchant,
-            category,
-            hitCount: 1,
-            updatedAt: new Date().toISOString(),
-          };
-      return [rule, ...prev.filter((r) => r.id !== rule.id)];
-    });
-  }, [transactions]);
+  const applyCategory = useCallback(
+    (txnId: string, category: string) => {
+      const txn = snapRef.current.transactions.find((t) => t.id === txnId);
+      if (txn) {
+        setSnap((s) => ({
+          ...s,
+          transactions: s.transactions.map((t) =>
+            t.merchantNormalized === txn.merchantNormalized ? { ...t, category } : t,
+          ),
+        }));
+      }
+      run(() => backend.applyCategory(txnId, category));
+    },
+    [backend, run],
+  );
 
-  const deleteRule = useCallback((id: string) => {
-    setRules((prev) => prev.filter((r) => r.id !== id));
-  }, []);
+  const deleteRule = useCallback(
+    (id: string) => {
+      setSnap((s) => ({ ...s, rules: s.rules.filter((r) => r.id !== id) }));
+      run(() => backend.deleteRule(id));
+    },
+    [backend, run],
+  );
 
   const addCategory = useCallback(
-    (name: string, icon: string, color: string): boolean => {
+    (name: string, icon: string, color: string) => {
       const clean = name.trim();
-      if (!clean) return false;
-      if (categories.some((c) => c.name.toLowerCase() === clean.toLowerCase())) return false;
-      setCategories((prev) => [
-        ...prev,
-        { id: newId('c'), name: clean, icon, color, isCustom: true, createdAt: new Date().toISOString() },
-      ]);
+      if (
+        !clean ||
+        snapRef.current.categories.some((c) => c.name.toLowerCase() === clean.toLowerCase())
+      ) {
+        return false;
+      }
+      setSnap((s) => ({
+        ...s,
+        categories: [
+          ...s.categories,
+          {
+            id: `c_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`,
+            name: clean,
+            icon,
+            color,
+            isCustom: true,
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      }));
+      run(() => backend.addCategory(clean, icon, color));
       return true;
     },
-    [categories],
+    [backend, run],
   );
 
   const updateCategory = useCallback(
     (id: string, patch: { name?: string; icon?: string; color?: string }) => {
-      const cat = categories.find((c) => c.id === id);
+      const cat = snapRef.current.categories.find((c) => c.id === id);
       if (!cat) return;
       const name = patch.name?.trim() || cat.name;
       if (
         name !== cat.name &&
-        categories.some((c) => c.id !== id && c.name.toLowerCase() === name.toLowerCase())
+        snapRef.current.categories.some(
+          (c) => c.id !== id && c.name.toLowerCase() === name.toLowerCase(),
+        )
       ) {
         return;
       }
-      setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch, name } : c)));
-      if (name !== cat.name) {
-        setTransactions((prev) =>
-          prev.map((t) => (t.category === cat.name ? { ...t, category: name } : t)),
-        );
-        setRules((prev) => prev.map((r) => (r.category === cat.name ? { ...r, category: name } : r)));
-      }
+      setSnap((s) => ({
+        ...s,
+        categories: s.categories.map((c) => (c.id === id ? { ...c, ...patch, name } : c)),
+        transactions:
+          name !== cat.name
+            ? s.transactions.map((t) =>
+                t.category === cat.name ? { ...t, category: name } : t,
+              )
+            : s.transactions,
+        rules:
+          name !== cat.name
+            ? s.rules.map((r) => (r.category === cat.name ? { ...r, category: name } : r))
+            : s.rules,
+      }));
+      run(() => backend.updateCategory(id, { ...patch, name }));
     },
-    [categories],
+    [backend, run],
   );
 
   const deleteCategory = useCallback(
     (id: string) => {
-      const cat = categories.find((c) => c.id === id);
+      const cat = snapRef.current.categories.find((c) => c.id === id);
       if (!cat || !cat.isCustom) return;
-      setCategories((prev) => prev.filter((c) => c.id !== id));
-      setTransactions((prev) =>
-        prev.map((t) => (t.category === cat.name ? { ...t, category: 'Others' } : t)),
-      );
-      setRules((prev) => prev.map((r) => (r.category === cat.name ? { ...r, category: 'Others' } : r)));
+      setSnap((s) => ({
+        ...s,
+        categories: s.categories.filter((c) => c.id !== id),
+        transactions: s.transactions.map((t) =>
+          t.category === cat.name ? { ...t, category: 'Others' } : t,
+        ),
+        rules: s.rules.map((r) => (r.category === cat.name ? { ...r, category: 'Others' } : r)),
+      }));
+      run(() => backend.deleteCategory(id));
     },
-    [categories],
+    [backend, run],
   );
 
   const addTestTransactions = useCallback(() => {
-    setTransactions((prev) => [...generateTestTransactions(50, rules), ...prev]);
-  }, [rules]);
+    run(() =>
+      backend.insertTransactions(generateTestTransactions(50, snapRef.current.rules), 'append'),
+    );
+  }, [backend, run]);
 
   const clearTestData = useCallback(() => {
-    setTransactions((prev) => prev.filter((t) => !t.isTestData));
-  }, []);
+    setSnap((s) => ({ ...s, transactions: s.transactions.filter((t) => !t.isTestData) }));
+    run(() => backend.clearTestData());
+  }, [backend, run]);
 
   const resetDemoData = useCallback(() => {
-    setTransactions(generateMockTransactions(120, Date.now() % 100000, rules));
-  }, [rules]);
+    run(() =>
+      backend.insertTransactions(
+        generateMockTransactions(120, Date.now() % 100000, snapRef.current.rules),
+        'replaceAll',
+      ),
+    );
+  }, [backend, run]);
 
   const value: AppStore = {
     ready,
-    profile,
-    transactions,
-    categories,
-    rules,
-    settings,
+    profile: snap.profile,
+    transactions: snap.transactions,
+    categories: snap.categories,
+    rules: snap.rules,
+    settings: snap.settings,
     saveProfile,
     finishOnboarding,
     updateName,
@@ -264,5 +305,3 @@ export function useAppStore(): AppStore {
   if (!ctx) throw new Error('useAppStore must be used inside AppStoreProvider');
   return ctx;
 }
-
-export { normalizeMerchant };
