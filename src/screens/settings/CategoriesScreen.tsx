@@ -6,7 +6,6 @@ import { getIcon, ICONS } from '@/components/icons';
 import { Button, ScreenHeader, Sheet } from '@/components/ui';
 import { categoryBreakdown, inRange, monthToDate } from '@/services/analytics/derive';
 import { formatMoney } from '@/utils/format';
-import { categoryColor } from '@/theme/tokens';
 import type { Category } from '@/types';
 
 const COLOR_SWATCHES = [
@@ -138,7 +137,6 @@ export function CategoriesScreen() {
           className="input"
           value={nameDraft}
           maxLength={24}
-          disabled={!adding && editing ? !editing.isCustom && false : false}
           onChange={(e) => setNameDraft(e.target.value)}
           placeholder="e.g. Pets"
         />
