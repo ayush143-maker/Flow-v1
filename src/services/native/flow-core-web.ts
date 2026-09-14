@@ -2,16 +2,19 @@ import { WebPlugin } from '@capacitor/core';
 import type {
   EngineInfo,
   FlowCorePlugin,
+  InsertResult,
   NotifListenerStatus,
+  ParserTestResult,
   PermissionStatus,
   SmsRequestResult,
+  SmsSyncResult,
 } from './flow-core';
 
 /**
  * Web fallback. It never pretends to be native — it reports honestly so the
  * UI can adapt (simulated permissions in the web preview, real on Android).
- * Store methods are native-only: the web app uses the Preferences backend
- * (src/services/store/backends.ts) instead.
+ * Store + SMS methods are native-only; the web app uses the Preferences
+ * backend instead.
  */
 export class FlowCoreWeb extends WebPlugin implements FlowCorePlugin {
   async getEngineInfo(): Promise<EngineInfo> {
@@ -32,6 +35,18 @@ export class FlowCoreWeb extends WebPlugin implements FlowCorePlugin {
 
   async isNotificationListenerEnabled(): Promise<NotifListenerStatus> {
     return { enabled: false };
+  }
+
+  async syncSms(): Promise<SmsSyncResult> {
+    return { permissionGranted: false, scanned: 0, parsed: 0, inserted: 0, duplicates: 0 };
+  }
+
+  async generateTestSms(): Promise<InsertResult> {
+    return { inserted: 0 };
+  }
+
+  async runParserTests(): Promise<ParserTestResult> {
+    return { total: 0, passed: 0, failures: [] };
   }
 
   private nativeOnly(method: string): Error {
