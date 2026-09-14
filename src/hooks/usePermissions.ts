@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { App, type AppStateChange } from '@capacitor/app';
+import { App } from '@capacitor/app';
 import { Capacitor, type PluginListenerHandle } from '@capacitor/core';
 import {
   checkSmsPermission,
@@ -35,11 +35,13 @@ export function usePermissions() {
     void recheck();
   }, [recheck]);
 
+  // Re-check whenever the app returns to the foreground — covers the user
+  // coming back from Android's special-access settings screens.
   useEffect(() => {
     if (!native) return;
     let disposed = false;
     let handle: PluginListenerHandle | undefined;
-    void App.addListener('appStateChange', (state: AppStateChange) => {
+    void App.addListener('appStateChange', (state) => {
       if (state.isActive) void recheck();
     }).then((h) => {
       if (disposed) h.remove();
