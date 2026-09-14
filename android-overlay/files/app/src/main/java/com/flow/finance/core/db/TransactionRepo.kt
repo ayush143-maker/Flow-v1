@@ -74,7 +74,8 @@ class TransactionRepo(private val helper: FlowDatabase) {
     /**
      * Bulk insert. `replaceAll` wipes the table first (demo reset);
      * otherwise INSERT OR IGNORE skips rows whose message_hash already
-     * exists (duplicate protection).
+     * exists (duplicate protection). Caller-provided messageHash wins over
+     * the body-derived hash so the SMS engine can include the day key.
      */
     fun insertAll(arr: JSONArray, replaceAll: Boolean): Int {
         val db = helper.writableDatabase
@@ -114,8 +115,8 @@ class TransactionRepo(private val helper: FlowDatabase) {
         cv.put("original_message", optStringOrNull(o, "originalMessage"))
         cv.put(
             "message_hash",
-            Mappers.txnHash(optStringOrNull(o, "originalMessage"))
-                ?: optStringOrNull(o, "messageHash")
+            optStringOrNull(o, "messageHash")
+                ?: Mappers.txnHash(optStringOrNull(o, "originalMessage"))
                 ?: UUID.randomUUID().toString()
         )
         cv.put("reference_id", optStringOrNull(o, "referenceId"))
