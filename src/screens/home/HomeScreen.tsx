@@ -8,7 +8,6 @@ import { MerchantAvatar } from '@/components/icons';
 import { Button, EmptyState } from '@/components/ui';
 import {
   categoryBreakdown,
-  debits,
   dailyTotals,
   inRange,
   monthToDate,
