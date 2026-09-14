@@ -11,28 +11,33 @@ import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.flow.finance.core.db.CategoryRepo
 import com.flow.finance.core.db.FlowDatabase
+import com.flow.finance.core.db.Mappers
 import com.flow.finance.core.db.MetaRepo
 import com.flow.finance.core.db.RulesRepo
 import com.flow.finance.core.db.TransactionRepo
+import com.flow.finance.core.parser.ParserFixtures
+import com.flow.finance.core.parser.TransactionParser
+import com.flow.finance.core.sms.SmsReader
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.UUID
 
 /**
  * FlowCore — Flow's single native engine.
  *
- * Phase 3 (this version): full SQLite store — profile, settings, categories,
- * merchant rules and transactions live in flow.db on the device. The React
- * store mirrors everything via getSnapshot() and calls mutation methods here.
+ * Phase 4 (this version): real SMS ingestion. SmsReader reads the inbox
+ * incrementally on-device, TransactionParser converts messages to structured
+ * transactions (merchant rules applied, duplicates rejected by message hash),
+ * and everything lands in SQLite. Developer Tools gets real SMS test tooling.
  *
- * Later phases add: incremental SMS ingestion + parser (Phase 4), the
- * notification listener (Phase 5), full duplicate detection (Phase 6).
- * Everything stays on-device; this plugin never performs network I/O.
+ * Later phases: notification listener (5), cross-source dedup (6).
+ * This plugin never performs network I/O.
  */
 @CapacitorPlugin(name = "FlowCore")
 class FlowCorePlugin : Plugin() {
 
     companion object {
-        const val ENGINE_VERSION = "2.0.0"
+        const val ENGINE_VERSION = "3.0.0"
         private const val SMS_PERMISSION_REQUEST = 5017
         private const val SNAPSHOT_LIMIT = 3000
     }
@@ -42,6 +47,7 @@ class FlowCorePlugin : Plugin() {
     private lateinit var categories: CategoryRepo
     private lateinit var rules: RulesRepo
     private lateinit var meta: MetaRepo
+    private lateinit var smsReader: SmsReader
 
     override fun load() {
         super.load()
@@ -50,6 +56,7 @@ class FlowCorePlugin : Plugin() {
         categories = CategoryRepo(dbHelper)
         rules = RulesRepo(dbHelper)
         meta = MetaRepo(dbHelper)
+        smsReader = SmsReader(context, dbHelper)
     }
 
     // ------------------------------------------------------------------ engine
@@ -125,9 +132,115 @@ class FlowCorePlugin : Plugin() {
         call.resolve(result)
     }
 
+    // -------------------------------------------------------------- SMS engine
+
+    /** Reads new SMS since the last sync, parses and stores transactions. */
+    @PluginMethod
+    fun syncSms(call: PluginCall) {
+        try {
+            if (!hasSmsPermission()) {
+                val r = JSObject()
+                r.put("permissionGranted", false)
+                r.put("scanned", 0)
+                r.put("parsed", 0)
+                r.put("inserted", 0)
+                r.put("duplicates", 0)
+                call.resolve(r)
+                return
+            }
+            val stats = smsReader.sync()
+            val r = JSObject()
+            r.put("permissionGranted", true)
+            r.put("scanned", stats.scanned)
+            r.put("parsed", stats.parsed)
+            r.put("inserted", stats.inserted)
+            r.put("duplicates", stats.duplicates)
+            call.resolve(r)
+        } catch (e: Exception) {
+            call.reject("syncSms failed: ${e.message}")
+        }
+    }
+
+    /**
+     * Developer Tools: run the fixture corpus through the REAL parser and
+     * insert the results as clearly-flagged test transactions.
+     */
+    @PluginMethod
+    fun generateTestSms(call: PluginCall) {
+        try {
+            val rulesMap = HashMap<String, String>()
+            val arr = rules.list()
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                rulesMap[o.optString("merchantNormalized")] = o.optString("category")
+            }
+            val now = System.currentTimeMillis()
+            val out = JSONArray()
+            for (f in ParserFixtures.FIXTURES) {
+                if (!f.expectParsed) continue
+                val ts = now - f.dayOffset * 86400000L
+                val p = TransactionParser.parse(f.sender, f.body, ts) ?: continue
+                val normalized = Mappers.normalizeMerchant(p.merchant)
+                val o = JSONObject()
+                o.put("id", UUID.randomUUID().toString())
+                o.put("amountMinor", p.amountMinor)
+                o.put("currency", "INR")
+                o.put("merchant", p.merchant)
+                o.put("merchantNormalized", normalized)
+                o.put("category", rulesMap[normalized] ?: p.category)
+                o.put("type", p.type)
+                o.put("source", "test")
+                o.put("paymentMethod", p.paymentMethod ?: JSONObject.NULL)
+                o.put("accountHint", p.accountHint ?: JSONObject.NULL)
+                o.put("transactionDate", p.transactionDate)
+                o.put("createdAt", Mappers.nowIso())
+                o.put("originalMessage", f.body)
+                o.put("messageHash", Mappers.sha256Hex(
+                    f.body.uppercase().replace(Regex("\\s+"), " ").trim() +
+                        "|" + p.transactionDate.substring(0, 10)
+                ))
+                o.put("referenceId", p.referenceId ?: JSONObject.NULL)
+                o.put("isTestData", true)
+                val meta = JSONObject()
+                if (p.bank != null) meta.put("bank", p.bank)
+                if (f.sender != null) meta.put("sender", f.sender)
+                if (meta.length() > 0) o.put("metadata", meta)
+                out.put(o)
+            }
+            val inserted = txns.insertAll(out, false)
+            val r = JSObject()
+            r.put("inserted", inserted)
+            call.resolve(r)
+        } catch (e: Exception) {
+            call.reject("generateTestSms failed: ${e.message}")
+        }
+    }
+
+    /** Developer Tools: run the parser fixture suite in-app and report results. */
+    @PluginMethod
+    fun runParserTests(call: PluginCall) {
+        try {
+            val outcomes = ParserFixtures.evaluate()
+            val failures = JSONArray()
+            for (o in outcomes) {
+                if (o.reason == null) continue
+                val f = JSObject()
+                f.put("message", o.fixture.body)
+                f.put("reason", o.reason)
+                failures.put(f)
+            }
+            val r = JSObject()
+            r.put("total", outcomes.size)
+            r.put("passed", outcomes.size - failures.length())
+            r.put("failures", failures)
+            call.resolve(r)
+        } catch (e: Exception) {
+            call.reject("runParserTests failed: ${e.message}")
+        }
+    }
+
     // ------------------------------------------------------------------ store
 
-    /** Full app state in one call — the React store mirrors this. */
     @PluginMethod
     fun getSnapshot(call: PluginCall) {
         try {
@@ -171,7 +284,6 @@ class FlowCorePlugin : Plugin() {
         }
     }
 
-    /** mode: "append" (dedup via message hash) or "replaceAll" (demo reset). */
     @PluginMethod
     fun insertTransactions(call: PluginCall) {
         try {
@@ -187,7 +299,6 @@ class FlowCorePlugin : Plugin() {
         }
     }
 
-    /** Category correction — stores it for the whole merchant + learns the rule. */
     @PluginMethod
     fun applyCategory(call: PluginCall) {
         try {
