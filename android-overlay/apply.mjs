@@ -9,7 +9,10 @@
  *   1. Copies every file in android-overlay/files/** into android/**
  *      (manifest, Kotlin sources, values resources).
  *   2. Removes the template's generated Java MainActivity (we ship Kotlin).
- *   3. Patches the Gradle files to enable Kotlin compilation.
+ *   3. Patches android/build.gradle to add the Kotlin Gradle plugin.
+ *   4. Patches android/app/build.gradle: Kotlin plugin + matching Java/Kotlin
+ *      compile targets (prevents Gradle's "Inconsistent JVM-target
+ *      compatibility" failure).
  *
  * Deterministic + idempotent: safe to run again over an already-patched tree.
  */
@@ -29,12 +32,15 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const FILES_DIR = join(ROOT, 'android-overlay/files');
 const ANDROID_DIR = join(ROOT, 'android');
 const KOTLIN_VERSION = '2.1.20';
-const JAVA_VERSION = '21';
+// Java 17 bytecode: Gradle runs on JDK 21 (can emit 17), Kotlin fully supports
+// it, and it matches Capacitor's own Android library level.
+const JAVA_VERSION = '17';
 
 const REQUIRED_AFTER_COPY = [
   'app/src/main/AndroidManifest.xml',
   'app/src/main/java/com/flow/finance/MainActivity.kt',
   'app/src/main/java/com/flow/finance/core/FlowCorePlugin.kt',
+  'app/src/main/res/values/flow_colors.xml',
 ];
 
 function fail(message) {
@@ -106,10 +112,11 @@ if (!rootGradle.includes('kotlin-gradle-plugin')) {
   console.log('  ~ android/build.gradle: Kotlin plugin added');
 }
 
-// 4) Patch android/app/build.gradle — enable Kotlin + align JVM target with Capacitor's Java 21.
+// 4) Patch android/app/build.gradle — Kotlin plugin + consistent compile targets.
 const appGradlePath = join(ANDROID_DIR, 'app/build.gradle');
 if (!existsSync(appGradlePath)) fail('android/app/build.gradle not found.');
 let appGradle = readFileSync(appGradlePath, 'utf8');
+
 if (!appGradle.includes('org.jetbrains.kotlin.android')) {
   appGradle = mustReplace(
     appGradle,
@@ -118,15 +125,22 @@ if (!appGradle.includes('org.jetbrains.kotlin.android')) {
     'android/app/build.gradle (application plugin)',
   );
 }
-if (!appGradle.includes('kotlinOptions')) {
-  appGradle = mustReplace(
-    appGradle,
-    /^android\s*\{/m,
-    `android {\n    kotlinOptions {\n        jvmTarget = '${JAVA_VERSION}'\n    }`,
-    'android/app/build.gradle (android block)',
-  );
-}
+
+// Remove any existing compileOptions / kotlinOptions blocks (the template's or
+// a previous run's), then insert ONE consistent pair. This guarantees Java and
+// Kotlin emit the same bytecode version — otherwise Gradle fails with
+// "Inconsistent JVM-target compatibility detected".
+appGradle = `${appGradle
+  .replace(/compileOptions\s*\{[^}]*\}/, '')
+  .replace(/kotlinOptions\s*\{[^}]*\}/, '')
+  .trimEnd()}\n`;
+appGradle = mustReplace(
+  appGradle,
+  /^android\s*\{/m,
+  `android {\n    compileOptions {\n        sourceCompatibility JavaVersion.VERSION_${JAVA_VERSION}\n        targetCompatibility JavaVersion.VERSION_${JAVA_VERSION}\n    }\n    kotlinOptions {\n        jvmTarget = '${JAVA_VERSION}'\n    }`,
+  'android/app/build.gradle (android block)',
+);
 writeFileSync(appGradlePath, appGradle);
-console.log('  ~ android/app/build.gradle: Kotlin enabled, JVM target 21');
+console.log(`  ~ android/app/build.gradle: Kotlin enabled · Java ${JAVA_VERSION} · Kotlin target ${JAVA_VERSION}`);
 
 console.log('✓ Overlay applied.');
