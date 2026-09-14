@@ -10,12 +10,11 @@
  *      (manifest, Kotlin sources, values resources).
  *   2. Removes the template's generated Java MainActivity (we ship Kotlin).
  *   3. Patches android/build.gradle to add the Kotlin Gradle plugin.
- *   4. Patches android/app/build.gradle: Kotlin plugin + Java/Kotlin both at 21.
- *
- * Why 21: Capacitor 7 targets Java 21 — its generated capacitor.build.gradle
- * re-asserts compileOptions 21 AFTER our blocks run (later Groovy config wins).
- * So the only consistent setup is Java 21 AND Kotlin jvmTarget 21, matching the
- * JDK 21 that CI uses. Anything else = "Inconsistent JVM-target compatibility".
+ *   4. Patches android/app/build.gradle: Kotlin plugin + Java/Kotlin both at 21
+ *      (21 matches Capacitor 7's own Java level and the CI JDK).
+ *   5. Patches res/values/styles.xml: opts OUT of Android 15 edge-to-edge so
+ *      the WebView lays out BELOW the status bar (fixes headings rendered
+ *      under the clock/battery).
  *
  * Deterministic + idempotent: safe to run again over an already-patched tree.
  */
@@ -36,13 +35,13 @@ const FILES_DIR = join(ROOT, 'android-overlay/files');
 const ANDROID_DIR = join(ROOT, 'android');
 const KOTLIN_VERSION = '2.1.20';
 // MUST be 21: matches Capacitor 7's own Java level and the CI JDK.
-// See the header comment above before changing this.
 const JAVA_VERSION = '21';
 
 const REQUIRED_AFTER_COPY = [
   'app/src/main/AndroidManifest.xml',
   'app/src/main/java/com/flow/finance/MainActivity.kt',
   'app/src/main/java/com/flow/finance/core/FlowCorePlugin.kt',
+  'app/src/main/java/com/flow/finance/core/db/FlowDatabase.kt',
   'app/src/main/res/values/flow_colors.xml',
 ];
 
@@ -131,8 +130,6 @@ if (!appGradle.includes('org.jetbrains.kotlin.android')) {
 
 // Remove any existing compileOptions / kotlinOptions blocks (the template's or
 // a previous run's), then insert ONE consistent pair — both at JAVA_VERSION.
-// Capacitor's capacitor.build.gradle (applied last) also sets Java 21, so
-// JAVA_VERSION must stay 21 to remain consistent with it.
 appGradle = `${appGradle
   .replace(/compileOptions\s*\{[^}]*\}/, '')
   .replace(/kotlinOptions\s*\{[^}]*\}/, '')
@@ -145,5 +142,30 @@ appGradle = mustReplace(
 );
 writeFileSync(appGradlePath, appGradle);
 console.log(`  ~ android/app/build.gradle: Kotlin enabled · Java ${JAVA_VERSION} · Kotlin target ${JAVA_VERSION}`);
+
+// 5) Patch res/values/styles.xml — opt out of Android 15+ edge-to-edge
+//    so app content starts BELOW the status bar (classic, correct layout).
+const stylesPath = join(ANDROID_DIR, 'app/src/main/res/values/styles.xml');
+if (!existsSync(stylesPath)) {
+  console.log('  ! res/values/styles.xml not found — skipping edge-to-edge patch');
+} else {
+  let styles = readFileSync(stylesPath, 'utf8');
+  if (!styles.includes('windowOptOutEdgeToEdgeEnforcement')) {
+    let patched = 0;
+    for (const styleName of ['AppTheme.NoActionBar', 'AppTheme.NoActionBarLaunch']) {
+      const re = new RegExp(`(<style\\s+name="${styleName}"[^>]*>)`);
+      if (re.test(styles)) {
+        styles = styles.replace(
+          re,
+          `$1\n        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>`,
+        );
+        patched += 1;
+      }
+    }
+    if (patched === 0) fail('Could not patch styles.xml — no AppTheme styles found');
+    writeFileSync(stylesPath, styles);
+    console.log(`  ~ styles.xml: edge-to-edge opted out (${patched} theme${patched === 1 ? '' : 's'})`);
+  }
+}
 
 console.log('✓ Overlay applied.');
