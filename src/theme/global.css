@@ -1,49 +1,48 @@
 /* ==========================================================================
    Flow — Design System · Foundation
-   Premium, minimal, local-first. Light theme (default) + dark navy surfaces.
-   TypeScript-visible tokens live in src/theme/tokens.ts (keep in sync).
+   Visual direction: bankme-inspired — warm paper background, sage accents,
+   charcoal ink, flat & airy. Light theme (default) + warm dark mode.
    ========================================================================== */
 
 :root {
-  /* Brand */
-  --brand-mint: #2FD6B3;
-  --brand-azure: #4FB0EC;
-  --brand-violet: #7C6CF0;
-  --brand-gradient: linear-gradient(135deg, #2FD6B3 0%, #4FB0EC 50%, #7C6CF0 100%);
-  --brand-gradient-soft: linear-gradient(
-    135deg,
-    rgba(47, 214, 179, 0.14) 0%,
-    rgba(79, 176, 236, 0.14) 50%,
-    rgba(124, 108, 240, 0.14) 100%
-  );
+  /* Accent (sage) */
+  --accent: #7FA184;
+  --accent-strong: #6C8F72;
+  --accent-soft: rgba(127, 161, 132, 0.16);
+
+  /* Brand gradient — used sparingly (logo accents only) */
+  --brand-mint: #7FA184;
+  --brand-azure: #6C8F72;
+  --brand-violet: #A3B1A7;
+  --brand-gradient: linear-gradient(135deg, #7FA184 0%, #6C8F72 100%);
 
   /* Semantic */
-  --credit: #0BA678;
-  --danger: #E5484D;
-  --warning: #F5A524;
+  --credit: #5E8C61;
+  --danger: #C67A6E;
+  --warning: #C0A25A;
 
-  /* Surfaces — light theme (default) */
-  --bg: #F5F7FB;
-  --bg-grad: radial-gradient(120% 80% at 50% 0%, #FFFFFF 0%, #F1F4FA 55%, #EDF1F8 100%);
+  /* Surfaces — warm paper */
+  --bg: #F3F2ED;
+  --bg-grad: linear-gradient(#F3F2ED, #F3F2ED);
   --surface: #FFFFFF;
-  --surface-2: #F0F3F9;
-  --surface-3: #E7ECF4;
-  --ink: #0D1526;
-  --ink-2: #51607A;
-  --ink-3: #8B97AC;
-  --line: #E3E8F1;
-  --line-strong: #D2D9E6;
-  --overlay: rgba(13, 21, 38, 0.45);
+  --surface-2: #F7F6F1;
+  --surface-3: #EDEBE3;
+  --ink: #1E2321;
+  --ink-2: #636E67;
+  --ink-3: #A6ADA6;
+  --line: #E9E8E1;
+  --line-strong: #DCDBD2;
+  --overlay: rgba(30, 35, 33, 0.42);
 
-  --shadow-1: 0 1px 2px rgba(13, 21, 38, 0.04), 0 2px 10px rgba(13, 21, 38, 0.05);
-  --shadow-2: 0 6px 22px rgba(13, 21, 38, 0.09);
-  --shadow-3: 0 18px 44px rgba(13, 21, 38, 0.14);
+  --shadow-1: 0 1px 2px rgba(30, 35, 33, 0.03), 0 10px 30px rgba(30, 35, 33, 0.05);
+  --shadow-2: 0 2px 6px rgba(30, 35, 33, 0.05), 0 18px 44px rgba(30, 35, 33, 0.09);
+  --shadow-3: 0 24px 60px rgba(30, 35, 33, 0.16);
 
   /* Shape & rhythm */
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 20px;
-  --radius-xl: 26px;
+  --radius-xl: 28px;
   --radius-full: 999px;
 
   --space-1: 4px;
@@ -61,39 +60,50 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #0A0F1C;
-    --bg-grad: radial-gradient(120% 80% at 50% 0%, #101A2E 0%, #0C1322 55%, #0A0F1C 100%);
-    --surface: #111928;
-    --surface-2: #182236;
-    --surface-3: #1F2B42;
-    --ink: #F2F5FA;
-    --ink-2: #A6B2C6;
-    --ink-3: #6D7A92;
-    --line: #1E2A40;
-    --line-strong: #2A3A56;
-    --overlay: rgba(2, 6, 16, 0.62);
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 2px 10px rgba(0, 0, 0, 0.3);
-    --shadow-2: 0 6px 22px rgba(0, 0, 0, 0.42);
-    --shadow-3: 0 18px 44px rgba(0, 0, 0, 0.5);
+    --accent: #8FB494;
+    --accent-strong: #9DC2A2;
+    --accent-soft: rgba(143, 180, 148, 0.16);
+    --credit: #8FBF92;
+    --danger: #D69084;
+    --warning: #CDB072;
+    --bg: #171A18;
+    --bg-grad: linear-gradient(#171A18, #171A18);
+    --surface: #202422;
+    --surface-2: #262B28;
+    --surface-3: #2E3430;
+    --ink: #ECEDE9;
+    --ink-2: #A4ABA4;
+    --ink-3: #71796F;
+    --line: #2A2F2C;
+    --line-strong: #383E3A;
+    --overlay: rgba(5, 8, 6, 0.6);
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.25);
+    --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.3), 0 18px 44px rgba(0, 0, 0, 0.35);
+    --shadow-3: 0 24px 60px rgba(0, 0, 0, 0.45);
   }
 }
 
-/* Explicit override (Settings-managed theme arrives in a later phase). */
 :root[data-theme='dark'] {
-  --bg: #0A0F1C;
-  --bg-grad: radial-gradient(120% 80% at 50% 0%, #101A2E 0%, #0C1322 55%, #0A0F1C 100%);
-  --surface: #111928;
-  --surface-2: #182236;
-  --surface-3: #1F2B42;
-  --ink: #F2F5FA;
-  --ink-2: #A6B2C6;
-  --ink-3: #6D7A92;
-  --line: #1E2A40;
-  --line-strong: #2A3A56;
-  --overlay: rgba(2, 6, 16, 0.62);
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 2px 10px rgba(0, 0, 0, 0.3);
-  --shadow-2: 0 6px 22px rgba(0, 0, 0, 0.42);
-  --shadow-3: 0 18px 44px rgba(0, 0, 0, 0.5);
+  --accent: #8FB494;
+  --accent-strong: #9DC2A2;
+  --accent-soft: rgba(143, 180, 148, 0.16);
+  --credit: #8FBF92;
+  --danger: #D69084;
+  --warning: #CDB072;
+  --bg: #171A18;
+  --bg-grad: linear-gradient(#171A18, #171A18);
+  --surface: #202422;
+  --surface-2: #262B28;
+  --surface-3: #2E3430;
+  --ink: #ECEDE9;
+  --ink-2: #A4ABA4;
+  --ink-3: #71796F;
+  --line: #2A2F2C;
+  --line-strong: #383E3A;
+  --overlay: rgba(5, 8, 6, 0.6);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.25);
+  --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.3), 0 18px 44px rgba(0, 0, 0, 0.35);
+  --shadow-3: 0 24px 60px rgba(0, 0, 0, 0.45);
 }
 
 /* Base ------------------------------------------------------------------- */
@@ -158,7 +168,7 @@ p {
 }
 
 :focus-visible {
-  outline: 2px solid var(--brand-mint);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -179,14 +189,6 @@ p {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-1);
-}
-
-.text-gradient {
-  background: var(--brand-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
 }
 
 /* Motion ------------------------------------------------------------------ */
