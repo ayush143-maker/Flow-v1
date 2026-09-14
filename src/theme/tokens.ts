@@ -16,21 +16,31 @@ export const SEMANTIC = {
   warning: '#F5A524',
 } as const;
 
-/** Default category palette (matches the default category set). */
-export const CATEGORY_COLORS: Record<string, string> = {
-  Food: '#FF7A59',
-  Groceries: '#4ADE80',
-  Shopping: '#7C6CF0',
-  Travel: '#38BDF8',
-  Bills: '#F5A524',
-  Entertainment: '#F472B6',
-  Health: '#2FD6B3',
-  Education: '#60A5FA',
-  Subscriptions: '#A78BFA',
-  Cash: '#94A3B8',
-  Transfers: '#CBD5E1',
-  Others: '#8B97AC',
-};
+export interface CategoryDef {
+  name: string;
+  icon: string;
+  color: string;
+}
+
+/** Default category set — names, icon keys and palette. */
+export const DEFAULT_CATEGORIES: CategoryDef[] = [
+  { name: 'Food', icon: 'food', color: '#FF7A59' },
+  { name: 'Shopping', icon: 'shopping', color: '#7C6CF0' },
+  { name: 'Travel', icon: 'travel', color: '#38BDF8' },
+  { name: 'Bills', icon: 'bills', color: '#F5A524' },
+  { name: 'Entertainment', icon: 'entertainment', color: '#F472B6' },
+  { name: 'Health', icon: 'health', color: '#2FD6B3' },
+  { name: 'Education', icon: 'education', color: '#60A5FA' },
+  { name: 'Groceries', icon: 'groceries', color: '#4ADE80' },
+  { name: 'Subscriptions', icon: 'subscriptions', color: '#A78BFA' },
+  { name: 'Cash', icon: 'cash', color: '#94A3B8' },
+  { name: 'Transfers', icon: 'transfers', color: '#CBD5E1' },
+  { name: 'Others', icon: 'others', color: '#8B97AC' },
+];
+
+const CATEGORY_COLORS: Record<string, string> = Object.fromEntries(
+  DEFAULT_CATEGORIES.map((c) => [c.name, c.color]),
+);
 
 export const FALLBACK_CATEGORY_COLOR = '#8B97AC';
 
