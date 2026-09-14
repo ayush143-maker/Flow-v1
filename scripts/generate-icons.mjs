@@ -8,7 +8,7 @@
  *   android/…/res/mipmap-*/ic_launcher.png               — legacy square icon (white bg)
  *   android/…/res/mipmap-*/ic_launcher_round.png         — legacy round icon (white disc)
  *   android/…/res/mipmap-*/ic_launcher_foreground.png    — adaptive foreground (transparent)
- *   android/…/res/mipmap-anydpi-v26/ic_launcher*.xml     — adaptive icon defs (white background)
+ *   android/…/res/mipmap-anydpi-v26/ic_launcher*.xml     — adaptive icon defs (white bg)
  *   android/…/res/drawable*/splash.png                   — launch splash (white, centered mark)
  *
  * Safe to re-run at any time; output is deterministic.
@@ -56,9 +56,12 @@ async function roundCompose({ size, inner, out }) {
   await sharp(disc).composite([{ input: mark, gravity: 'centre' }]).png().toFile(out);
 }
 
+// References the uniquely-named color defined in
+// android-overlay/files/app/src/main/res/values/flow_colors.xml
+// (unique name = can never collide with Android template resources).
 const ADAPTIVE_XML = `<?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/ic_launcher_background" />
+    <background android:drawable="@color/flow_launcher_background" />
     <foreground android:drawable="@mipmap/ic_launcher_foreground" />
     <monochrome android:drawable="@mipmap/ic_launcher_foreground" />
 </adaptive-icon>
