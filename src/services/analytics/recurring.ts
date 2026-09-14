@@ -26,7 +26,7 @@ export function detectRecurring(txns: Transaction[]): RecurringPayment[] {
   }
 
   const out: RecurringPayment[] = [];
-  for (const [, list] of groups) {
+  for (const [normalized, list] of groups) {
     if (list.length < 2) continue;
     const sorted = [...list].sort((a, b) => a.transactionDate.localeCompare(b.transactionDate));
     const times = sorted.map((t) => new Date(t.transactionDate).getTime());
@@ -45,8 +45,9 @@ export function detectRecurring(txns: Transaction[]): RecurringPayment[] {
     const last = sorted[sorted.length - 1];
     const next = addDays(new Date(last.transactionDate), Math.round(avg));
     out.push({
-      id: `rp_${last.merchantNormalized}`,
+      id: `rp_${normalized}`,
       merchant: last.merchant,
+      merchantNormalized: normalized,
       amountMinor: median(amounts),
       frequency: freq,
       lastSeen: last.transactionDate,
