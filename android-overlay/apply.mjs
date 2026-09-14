@@ -7,14 +7,14 @@
  * Flow's customization on top:
  *
  *   1. Copies every file in android-overlay/files/** into android/**
- *      (manifest, Kotlin sources, values resources).
+ *      (manifest, Kotlin sources, unit tests, values resources).
  *   2. Removes the template's generated Java MainActivity (we ship Kotlin).
  *   3. Patches android/build.gradle to add the Kotlin Gradle plugin.
- *   4. Patches android/app/build.gradle: Kotlin plugin + Java/Kotlin both at 21
+ *   4. Patches android/app/build.gradle: Kotlin plugin + Java/Kotlin at 21
  *      (21 matches Capacitor 7's own Java level and the CI JDK).
- *   5. Patches res/values/styles.xml: opts OUT of Android 15 edge-to-edge so
- *      the WebView lays out BELOW the status bar (fixes headings rendered
- *      under the clock/battery).
+ *   5. Adds JUnit test dependencies so the parser test suite runs in CI.
+ *   6. Patches res/values/styles.xml: opts OUT of Android 15 edge-to-edge so
+ *      the WebView lays out BELOW the status bar.
  *
  * Deterministic + idempotent: safe to run again over an already-patched tree.
  */
@@ -41,7 +41,9 @@ const REQUIRED_AFTER_COPY = [
   'app/src/main/AndroidManifest.xml',
   'app/src/main/java/com/flow/finance/MainActivity.kt',
   'app/src/main/java/com/flow/finance/core/FlowCorePlugin.kt',
-  'app/src/main/java/com/flow/finance/core/db/FlowDatabase.kt',
+  'app/src/main/java/com/flow/finance/core/parser/TransactionParser.kt',
+  'app/src/main/java/com/flow/finance/core/sms/SmsReader.kt',
+  'app/src/test/java/com/flow/finance/core/parser/TransactionParserTest.kt',
   'app/src/main/res/values/flow_colors.xml',
 ];
 
@@ -114,7 +116,7 @@ if (!rootGradle.includes('kotlin-gradle-plugin')) {
   console.log('  ~ android/build.gradle: Kotlin plugin added');
 }
 
-// 4) Patch android/app/build.gradle — Kotlin plugin + both targets at 21.
+// 4) + 5) Patch android/app/build.gradle — Kotlin plugin, targets at 21, JUnit.
 const appGradlePath = join(ANDROID_DIR, 'app/build.gradle');
 if (!existsSync(appGradlePath)) fail('android/app/build.gradle not found.');
 let appGradle = readFileSync(appGradlePath, 'utf8');
@@ -128,8 +130,6 @@ if (!appGradle.includes('org.jetbrains.kotlin.android')) {
   );
 }
 
-// Remove any existing compileOptions / kotlinOptions blocks (the template's or
-// a previous run's), then insert ONE consistent pair — both at JAVA_VERSION.
 appGradle = `${appGradle
   .replace(/compileOptions\s*\{[^}]*\}/, '')
   .replace(/kotlinOptions\s*\{[^}]*\}/, '')
@@ -140,11 +140,20 @@ appGradle = mustReplace(
   `android {\n    compileOptions {\n        sourceCompatibility JavaVersion.VERSION_${JAVA_VERSION}\n        targetCompatibility JavaVersion.VERSION_${JAVA_VERSION}\n    }\n    kotlinOptions {\n        jvmTarget = '${JAVA_VERSION}'\n    }`,
   'android/app/build.gradle (android block)',
 );
+
+if (!appGradle.includes('junit:junit')) {
+  appGradle = mustReplace(
+    appGradle,
+    /dependencies\s*\{/,
+    `dependencies {\n    testImplementation 'junit:junit:4.13.2'`,
+    'android/app/build.gradle (dependencies)',
+  );
+  console.log('  ~ android/app/build.gradle: JUnit added for the parser test suite');
+}
 writeFileSync(appGradlePath, appGradle);
 console.log(`  ~ android/app/build.gradle: Kotlin enabled · Java ${JAVA_VERSION} · Kotlin target ${JAVA_VERSION}`);
 
-// 5) Patch res/values/styles.xml — opt out of Android 15+ edge-to-edge
-//    so app content starts BELOW the status bar (classic, correct layout).
+// 6) Patch res/values/styles.xml — opt out of Android 15+ edge-to-edge.
 const stylesPath = join(ANDROID_DIR, 'app/src/main/res/values/styles.xml');
 if (!existsSync(stylesPath)) {
   console.log('  ! res/values/styles.xml not found — skipping edge-to-edge patch');
