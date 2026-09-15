@@ -1,9 +1,13 @@
 package com.flow.finance.core
 
 import android.Manifest
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.provider.Settings
+import android.service.notification.NotificationListenerService
 import com.getcapacitor.JSObject
 import com.getcapacitor.Plugin
 import com.getcapacitor.PluginCall
@@ -15,6 +19,9 @@ import com.flow.finance.core.db.Mappers
 import com.flow.finance.core.db.MetaRepo
 import com.flow.finance.core.db.RulesRepo
 import com.flow.finance.core.db.TransactionRepo
+import com.flow.finance.core.ingest.Ingestion
+import com.flow.finance.core.ingest.IngestResult
+import com.flow.finance.core.notify.FlowNotificationListener
 import com.flow.finance.core.parser.ParserFixtures
 import com.flow.finance.core.parser.TransactionParser
 import com.flow.finance.core.sms.SmsReader
@@ -25,19 +32,18 @@ import java.util.UUID
 /**
  * FlowCore — Flow's single native engine.
  *
- * Phase 4 (this version): real SMS ingestion. SmsReader reads the inbox
- * incrementally on-device, TransactionParser converts messages to structured
- * transactions (merchant rules applied, duplicates rejected by message hash),
- * and everything lands in SQLite. Developer Tools gets real SMS test tooling.
+ * Phase 5+6 (this version): notification listener + cross-source duplicate
+ * detection. The listener and the SMS reader share one ingestion pipeline
+ * (rules → ref dedup → cross-source dedup → hash-unique insert), so a payment
+ * arriving via SMS AND a notification is stored exactly once.
  *
- * Later phases: notification listener (5), cross-source dedup (6).
- * This plugin never performs network I/O.
+ * Everything stays on-device; this plugin never performs network I/O.
  */
 @CapacitorPlugin(name = "FlowCore")
 class FlowCorePlugin : Plugin() {
 
     companion object {
-        const val ENGINE_VERSION = "3.0.0"
+        const val ENGINE_VERSION = "4.0.0"
         private const val SMS_PERMISSION_REQUEST = 5017
         private const val SNAPSHOT_LIMIT = 3000
     }
@@ -57,6 +63,7 @@ class FlowCorePlugin : Plugin() {
         rules = RulesRepo(dbHelper)
         meta = MetaRepo(dbHelper)
         smsReader = SmsReader(context, dbHelper)
+        maybeRequestListenerRebind()
     }
 
     // ------------------------------------------------------------------ engine
@@ -117,18 +124,8 @@ class FlowCorePlugin : Plugin() {
 
     @PluginMethod
     fun isNotificationListenerEnabled(call: PluginCall) {
-        val flat = Settings.Secure.getString(
-            context.contentResolver,
-            "enabled_notification_listeners"
-        ) ?: ""
-        val enabled = flat.split(":").any {
-            it.isNotBlank() && context.packageName.equals(
-                it.substringBefore('/'),
-                ignoreCase = true
-            )
-        }
         val result = JSObject()
-        result.put("enabled", enabled)
+        result.put("enabled", isListenerEnabled())
         call.resolve(result)
     }
 
@@ -162,32 +159,26 @@ class FlowCorePlugin : Plugin() {
     }
 
     /**
-     * Developer Tools: run the fixture corpus through the REAL parser and
-     * insert the results as clearly-flagged test transactions.
+     * Developer Tools: run the SMS fixture corpus through the REAL parser and
+     * the REAL ingestion pipeline (dedup included), flagged as test data.
      */
     @PluginMethod
     fun generateTestSms(call: PluginCall) {
         try {
-            val rulesMap = HashMap<String, String>()
-            val arr = rules.list()
-            for (i in 0 until arr.length()) {
-                val o = arr.getJSONObject(i)
-                rulesMap[o.optString("merchantNormalized")] = o.optString("category")
-            }
+            val ingestion = Ingestion(dbHelper)
             val now = System.currentTimeMillis()
-            val out = JSONArray()
+            var inserted = 0
+            var duplicates = 0
             for (f in ParserFixtures.FIXTURES) {
-                if (!f.expectParsed) continue
+                if (!f.expectParsed || f.notificationStyle) continue
                 val ts = now - f.dayOffset * 86400000L
                 val p = TransactionParser.parse(f.sender, f.body, ts) ?: continue
-                val normalized = Mappers.normalizeMerchant(p.merchant)
                 val o = JSONObject()
                 o.put("id", UUID.randomUUID().toString())
                 o.put("amountMinor", p.amountMinor)
                 o.put("currency", "INR")
                 o.put("merchant", p.merchant)
-                o.put("merchantNormalized", normalized)
-                o.put("category", rulesMap[normalized] ?: p.category)
+                o.put("category", p.category)
                 o.put("type", p.type)
                 o.put("source", "test")
                 o.put("paymentMethod", p.paymentMethod ?: JSONObject.NULL)
@@ -195,25 +186,96 @@ class FlowCorePlugin : Plugin() {
                 o.put("transactionDate", p.transactionDate)
                 o.put("createdAt", Mappers.nowIso())
                 o.put("originalMessage", f.body)
-                o.put("messageHash", Mappers.sha256Hex(
-                    f.body.uppercase().replace(Regex("\\s+"), " ").trim() +
-                        "|" + p.transactionDate.substring(0, 10)
-                ))
+                val normBody = f.body.uppercase().replace(Regex("\\s+"), " ").trim()
+                o.put("messageHash", Mappers.sha256Hex("$normBody|${p.transactionDate.substring(0, 10)}"))
                 o.put("referenceId", p.referenceId ?: JSONObject.NULL)
                 o.put("isTestData", true)
-                val meta = JSONObject()
-                if (p.bank != null) meta.put("bank", p.bank)
-                if (f.sender != null) meta.put("sender", f.sender)
-                if (meta.length() > 0) o.put("metadata", meta)
-                out.put(o)
+                val metaJson = JSONObject()
+                if (p.bank != null) metaJson.put("bank", p.bank)
+                if (f.sender != null) metaJson.put("sender", f.sender)
+                if (metaJson.length() > 0) o.put("metadata", metaJson)
+                if (ingestion.ingest(o) == IngestResult.INSERTED) inserted++ else duplicates++
             }
-            val inserted = txns.insertAll(out, false)
             val r = JSObject()
             r.put("inserted", inserted)
+            r.put("duplicates", duplicates)
             call.resolve(r)
         } catch (e: Exception) {
             call.reject("generateTestSms failed: ${e.message}")
         }
+    }
+
+    /**
+     * Developer Tools: run notification-style fixtures through the same
+     * pipeline the real listener uses (parse → rules → dedup → insert),
+     * flagged as test data with source "notification".
+     */
+    @PluginMethod
+    fun generateTestNotification(call: PluginCall) {
+        try {
+            val ingestion = Ingestion(dbHelper)
+            val now = System.currentTimeMillis()
+            var inserted = 0
+            var duplicates = 0
+            for (f in ParserFixtures.NOTIFICATION_TEST) {
+                val ts = now - f.dayOffset * 86400000L
+                val p = TransactionParser.parse(f.sender, f.body, ts) ?: continue
+                val o = JSONObject()
+                o.put("id", UUID.randomUUID().toString())
+                o.put("amountMinor", p.amountMinor)
+                o.put("currency", "INR")
+                o.put("merchant", p.merchant)
+                o.put("category", p.category)
+                o.put("type", p.type)
+                o.put("source", "notification")
+                o.put("paymentMethod", p.paymentMethod ?: JSONObject.NULL)
+                o.put("accountHint", p.accountHint ?: JSONObject.NULL)
+                o.put("transactionDate", p.transactionDate)
+                o.put("createdAt", Mappers.nowIso())
+                o.put("originalMessage", f.body)
+                val normBody = f.body.uppercase().replace(Regex("\\s+"), " ").trim()
+                o.put("messageHash", Mappers.sha256Hex("$normBody|${p.transactionDate.substring(0, 10)}"))
+                o.put("referenceId", p.referenceId ?: JSONObject.NULL)
+                o.put("isTestData", true)
+                val metaJson = JSONObject()
+                if (f.sender != null) metaJson.put("sender", f.sender)
+                o.put("metadata", metaJson)
+                if (ingestion.ingest(o) == IngestResult.INSERTED) inserted++ else duplicates++
+            }
+            val r = JSObject()
+            r.put("inserted", inserted)
+            r.put("duplicates", duplicates)
+            call.resolve(r)
+        } catch (e: Exception) {
+            call.reject("generateTestNotification failed: ${e.message}")
+        }
+    }
+
+    /** Live status of the notification pipeline (Developer Tools / Settings). */
+    @PluginMethod
+    fun getNotificationStats(call: PluginCall) {
+        try {
+            val prefs = context.getSharedPreferences(
+                FlowNotificationListener.PREFS,
+                Context.MODE_PRIVATE
+            )
+            val connectedAt = prefs.getLong(FlowNotificationListener.KEY_CONNECTED_AT, 0L)
+            val r = JSObject()
+            r.put("listenerEnabled", isListenerEnabled())
+            r.put("listenerBound", connectedAt > 0L)
+            r.put("processingEnabled", meta.getSettings().optBoolean("notificationsEnabled", true))
+            r.put("notificationTransactions", txns.countBySource("notification"))
+            call.resolve(r)
+        } catch (e: Exception) {
+            call.reject("getNotificationStats failed: ${e.message}")
+        }
+    }
+
+    /** Ask the system to rebind our listener (covers app updates / force stops). */
+    @PluginMethod
+    fun requestNotificationRebind(call: PluginCall) {
+        maybeRequestListenerRebind()
+        call.resolve()
     }
 
     /** Developer Tools: run the parser fixture suite in-app and report results. */
@@ -381,8 +443,37 @@ class FlowCorePlugin : Plugin() {
         }
     }
 
+    // ---------------------------------------------------------------- private
+
     private fun hasSmsPermission(): Boolean {
         return context.checkSelfPermission(Manifest.permission.READ_SMS) ==
             PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun isListenerEnabled(): Boolean {
+        val flat = Settings.Secure.getString(
+            context.contentResolver,
+            "enabled_notification_listeners"
+        ) ?: ""
+        return flat.split(":").any {
+            it.isNotBlank() && context.packageName.equals(
+                it.substringBefore('/'),
+                ignoreCase = true
+            )
+        }
+    }
+
+    private fun maybeRequestListenerRebind() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
+                meta.getSettings().optBoolean("notificationsEnabled", true)
+            ) {
+                NotificationListenerService.requestRebind(
+                    ComponentName(context, FlowNotificationListener::class.java)
+                )
+            }
+        } catch (e: Exception) {
+            // Best effort only.
+        }
     }
 }
