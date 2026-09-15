@@ -4,17 +4,19 @@ import type {
   FlowCorePlugin,
   InsertResult,
   NotifListenerStatus,
+  NotificationStats,
   ParserTestResult,
   PermissionStatus,
   SmsRequestResult,
   SmsSyncResult,
+  TestNotificationResult,
 } from './flow-core';
 
 /**
  * Web fallback. It never pretends to be native — it reports honestly so the
  * UI can adapt (simulated permissions in the web preview, real on Android).
- * Store + SMS methods are native-only; the web app uses the Preferences
- * backend instead.
+ * Store + SMS/notification methods are native-only; the web app uses the
+ * Preferences backend instead.
  */
 export class FlowCoreWeb extends WebPlugin implements FlowCorePlugin {
   async getEngineInfo(): Promise<EngineInfo> {
@@ -43,6 +45,23 @@ export class FlowCoreWeb extends WebPlugin implements FlowCorePlugin {
 
   async generateTestSms(): Promise<InsertResult> {
     return { inserted: 0 };
+  }
+
+  async generateTestNotification(): Promise<TestNotificationResult> {
+    return { inserted: 0, duplicates: 0 };
+  }
+
+  async getNotificationStats(): Promise<NotificationStats> {
+    return {
+      listenerEnabled: false,
+      listenerBound: false,
+      processingEnabled: false,
+      notificationTransactions: 0,
+    };
+  }
+
+  async requestNotificationRebind(): Promise<void> {
+    /* Web preview has no notification listener. */
   }
 
   async runParserTests(): Promise<ParserTestResult> {
