@@ -33,12 +33,16 @@ export function SettingsScreen() {
 
   return (
     <div className="pad set">
-      <h1 className="screen-title">Settings</h1>
+      <h1 className="screen-title">Profile</h1>
 
-      <button type="button" className="card set-profile" onClick={() => {
-        setNameDraft(profile?.name ?? '');
-        setEditOpen(true);
-      }}>
+      <button
+        type="button"
+        className="card set-profile"
+        onClick={() => {
+          setNameDraft(profile?.name ?? '');
+          setEditOpen(true);
+        }}
+      >
         <span className="home-avatar">{initials}</span>
         <span className="set-profile-body">
           <strong>{profile?.name ?? 'Your profile'}</strong>
@@ -53,9 +57,7 @@ export function SettingsScreen() {
           <MessageSquare size={19} />
           <div className="set-row-body">
             <strong>SMS access</strong>
-            <span className="set-row-sub">
-              Read transaction messages to detect spending
-            </span>
+            <span className="set-row-sub">Read transaction messages to detect spending</span>
           </div>
           <span className={`status-dot ${perms.smsGranted ? 'is-on' : ''}`} />
         </div>
@@ -155,7 +157,7 @@ export function SettingsScreen() {
           <strong>{APP_NAME}</strong>
           <span className="about-tagline">{APP_TAGLINE}</span>
           <div className="about-rows">
-            <span>Version</span><strong>v{APP_VERSION} · Phase 2</strong>
+            <span>Version</span><strong>v{APP_VERSION}</strong>
             <span>Engine</span><strong>Native Kotlin · on-device</strong>
             <span>Data</span><strong>100% local</strong>
           </div>
