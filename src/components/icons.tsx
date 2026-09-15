@@ -77,17 +77,23 @@ const MERCHANT_ICON: Record<string, string> = {
 function tint(color: string, alpha: number): string {
   const hex = color.replace('#', '');
   const full = hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex;
-  const n = parseInt(full, 16) || 0x8b97ac;
+  const n = parseInt(full, 16) || 0xa8ada8;
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
 }
 
+/**
+ * Visual identity for a transaction's merchant.
+ * Default categories render with the design-system palette; only custom
+ * categories use their stored color (old DB seed colors stay dormant).
+ */
 export function useMerchantVisual(txn: Transaction): { icon: string; color: string } {
   const { categories } = useAppStore();
   return useMemo(() => {
     const cat = categories.find((c) => c.name === txn.category);
+    const color = cat && cat.isCustom ? cat.color : categoryColor(txn.category);
     return {
       icon: MERCHANT_ICON[txn.merchantNormalized] ?? cat?.icon ?? 'others',
-      color: cat?.color ?? categoryColor(txn.category),
+      color,
     };
   }, [categories, txn.merchantNormalized, txn.category]);
 }
