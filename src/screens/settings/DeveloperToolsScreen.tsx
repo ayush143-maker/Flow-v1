@@ -1,13 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Bell, Database, MessageSquare, Trash2 } from 'lucide-react';
+import {
+  AlertTriangle, Bell, Database, Download, Fingerprint, MessageSquare, Trash2,
+} from 'lucide-react';
 import { useAppStore } from '@/services/store/AppStoreProvider';
 import { useNav } from '@/navigation/NavigationProvider';
 import {
+  generateTestNotification,
   generateTestSms,
   getEngineInfo,
+  getNotificationStats,
   runParserTests,
   syncSms,
   type EngineInfo,
+  type NotificationStats,
   type ParserTestResult,
 } from '@/services/native/flow-core';
 import { Button, ScreenHeader } from '@/components/ui';
@@ -17,16 +22,20 @@ export function DeveloperToolsScreen() {
   const { transactions, addTestTransactions, clearTestData, resetDemoData } = useAppStore();
   const nav = useNav();
   const [engine, setEngine] = useState<EngineInfo | null>(null);
+  const [notif, setNotif] = useState<NotificationStats | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [parserResult, setParserResult] = useState<ParserTestResult | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
 
   useEffect(() => {
-    void getEngineInfo()
-      .then(setEngine)
-      .catch(() => setEngine(null));
+    void getEngineInfo().then(setEngine).catch(() => setEngine(null));
+    void getNotificationStats().then(setNotif).catch(() => setNotif(null));
   }, []);
+
+  const refreshNotif = () => {
+    void getNotificationStats().then(setNotif).catch(() => setNotif(null));
+  };
 
   const stats = useMemo(() => {
     const test = transactions.filter((t) => t.isTestData).length;
@@ -79,7 +88,7 @@ export function DeveloperToolsScreen() {
             runOp('SMS sync', async () => {
               const r = await syncSms();
               if (!r.permissionGranted) {
-                return 'SMS permission not granted — allow it from Settings → Permissions first.';
+                return 'SMS permission not granted — allow it from Profile → Permissions first.';
               }
               return `scanned ${r.scanned}, parsed ${r.parsed}, inserted ${r.inserted}, duplicates ${r.duplicates}`;
             })
@@ -94,9 +103,7 @@ export function DeveloperToolsScreen() {
           onClick={() =>
             runOp('Test SMS', async () => {
               const r = await generateTestSms();
-              if (r.inserted === 0 && !engine?.native) {
-                return 'runs in the Android app (web preview here).';
-              }
+              if (!engine?.native) return 'runs in the Android app (web preview here).';
               return r.inserted > 0
                 ? `${r.inserted} transactions inserted via the real parser (flagged as test).`
                 : 'nothing new — this day already has these test messages. Clear test data and retry.';
@@ -135,6 +142,52 @@ export function DeveloperToolsScreen() {
       </div>
 
       <div className="card dev-card">
+        <h4 className="dev-title">Notifications (real listener)</h4>
+        {notif && (
+          <div className="dev-stats">
+            <div className="dev-stat">
+              <span>Listener enabled</span>
+              <strong>{notif.listenerEnabled ? 'Yes' : 'No'}</strong>
+            </div>
+            <div className="dev-stat">
+              <span>Listener bound</span>
+              <strong>{notif.listenerBound ? 'Yes' : 'No'}</strong>
+            </div>
+            <div className="dev-stat">
+              <span>Processing enabled</span>
+              <strong>{notif.processingEnabled ? 'Yes' : 'No'}</strong>
+            </div>
+            <div className="dev-stat">
+              <span>Notification transactions</span>
+              <strong>{notif.notificationTransactions}</strong>
+            </div>
+          </div>
+        )}
+        <Button
+          block
+          disabled={busy}
+          onClick={() =>
+            runOp('Test notifications', async () => {
+              const r = await generateTestNotification();
+              refreshNotif();
+              if (!engine?.native) return 'runs in the Android app (web preview here).';
+              if (r.inserted === 0 && r.duplicates === 0) {
+                return 'nothing new — these test notifications already exist for today.';
+              }
+              return `${r.inserted} inserted · ${r.duplicates} duplicates (same payments already captured from the other source — dedup working)`;
+            })
+          }
+        >
+          <Bell size={15} /> Generate test notifications
+        </Button>
+        <p className="set-note">
+          Enable notification access from Profile → Permissions. Real bank/payment
+          notifications are then parsed on-device, and the same payment arriving via
+          SMS and a notification is stored exactly once.
+        </p>
+      </div>
+
+      <div className="card dev-card">
         <h4 className="dev-title">Test data</h4>
         <Button
           block
@@ -151,6 +204,7 @@ export function DeveloperToolsScreen() {
           onClick={() => {
             clearTestData();
             setFeedback('Test data cleared.');
+            refreshNotif();
           }}
           disabled={stats.test === 0}
         >
@@ -177,12 +231,12 @@ export function DeveloperToolsScreen() {
       <div className="card dev-card">
         <h4 className="dev-title">Coming in the next batch</h4>
         <div className="dev-pending">
-          <Bell size={16} />
-          <span>Notification listener — reads bank/payment app notifications (Phase 5).</span>
+          <Download size={16} />
+          <span>Export data (CSV / JSON) + local backup & restore — Batch 5.</span>
         </div>
         <div className="dev-pending">
-          <Database size={16} />
-          <span>Cross-source duplicate detection — SMS vs notification matching (Phase 6).</span>
+          <Fingerprint size={16} />
+          <span>Biometric unlock for App Lock — final hardening batch.</span>
         </div>
       </div>
 
