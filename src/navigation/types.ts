@@ -2,6 +2,7 @@ export type TabName = 'home' | 'transactions' | 'insights' | 'settings';
 
 export type Route =
   | { name: 'transaction'; id: string }
+  | { name: 'add-transaction' }
   | { name: 'categories' }
   | { name: 'merchant-rules' }
   | { name: 'recurring' }
