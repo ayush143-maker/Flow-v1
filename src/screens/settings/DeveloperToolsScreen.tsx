@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  AlertTriangle, Bell, Database, Download, Fingerprint, MessageSquare, Trash2,
+  AlertTriangle, Bell, Download, Fingerprint, MessageSquare, Trash2,
 } from 'lucide-react';
 import { useAppStore } from '@/services/store/AppStoreProvider';
 import { useNav } from '@/navigation/NavigationProvider';
