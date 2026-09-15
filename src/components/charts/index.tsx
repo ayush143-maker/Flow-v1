@@ -87,7 +87,12 @@ export function BarChart({
         >
           <div
             className={`barchart-bar ${b.highlight ? 'is-hot' : ''}`}
-            style={{ height: `${Math.max((b.value / max) * 100, b.value > 0 ? 5 : 2)}%` }}
+            style={
+              {
+                height: `${Math.max((b.value / max) * 100, b.value > 0 ? 5 : 2)}%`,
+                '--i': String(i),
+              } as CSSProperties
+            }
           />
           {showLabels && b.label ? <span className="barchart-label">{b.label}</span> : null}
         </div>
