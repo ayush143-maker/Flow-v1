@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Search, Sparkles, X } from 'lucide-react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { Search, X } from 'lucide-react';
 import { useAppStore } from '@/services/store/AppStoreProvider';
 import { useNav } from '@/navigation/NavigationProvider';
 import { TransactionRow } from '@/components/TransactionRow';
@@ -25,6 +25,12 @@ function groupKey(iso: string): 'today' | 'yesterday' | 'earlier' {
   if (diff === 1) return 'yesterday';
   return 'earlier';
 }
+
+const TITLES: Record<string, string> = {
+  today: 'Today',
+  yesterday: 'Yesterday',
+  earlier: 'Earlier',
+};
 
 export function TransactionsScreen() {
   const { transactions } = useAppStore();
@@ -68,12 +74,6 @@ export function TransactionsScreen() {
     [filtered],
   );
 
-  const titles: Record<string, string> = {
-    today: 'Today',
-    yesterday: 'Yesterday',
-    earlier: 'Earlier',
-  };
-
   return (
     <div className="pad tx">
       <h1 className="screen-title">Transactions</h1>
@@ -107,12 +107,11 @@ export function TransactionsScreen() {
 
       {filtered.length === 0 ? (
         <EmptyState
-          icon={<Sparkles size={24} />}
-          title={query ? `Nothing matches “${query.trim()}”` : 'No transactions yet'}
+          title={query ? `Nothing matches “${query.trim()}”` : 'Nothing here yet.'}
           body={
             query
               ? 'Try a different merchant or category.'
-              : 'Grant SMS access or generate test data from Developer Tools.'
+              : "Once Flow detects your first transaction, it'll appear here automatically."
           }
           action={
             query ? (
@@ -120,8 +119,12 @@ export function TransactionsScreen() {
                 Clear search
               </Button>
             ) : (
-              <Button size="sm" variant="secondary" onClick={() => nav.push({ name: 'developer' })}>
-                Developer Tools
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => nav.push({ name: 'add-transaction' })}
+              >
+                Add one manually
               </Button>
             )
           }
@@ -130,10 +133,10 @@ export function TransactionsScreen() {
         <div className="card">
           {groups.map((g) => (
             <section key={g.key}>
-              <h4 className="tx-group-label">{titles[g.key]}</h4>
-              <ul className="txn-list">
-                {g.items.map((t) => (
-                  <li key={t.id}>
+              <h4 className="tx-group-label">{TITLES[g.key]}</h4>
+              <ul className="txn-list stagger">
+                {g.items.map((t, i) => (
+                  <li key={t.id} style={{ '--i': String(i) } as CSSProperties}>
                     <TransactionRow
                       txn={t}
                       showDate={g.key === 'earlier'}
