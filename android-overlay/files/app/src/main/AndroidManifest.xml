@@ -6,17 +6,10 @@
 
     <!--
       Flow reads the SMS inbox to detect bank/payment transaction messages.
-      This is a runtime permission: the app only requests it during onboarding,
-      after explaining exactly what it is used for. All parsing happens
-      on-device; message content never leaves the phone.
+      Runtime permission, requested in-app only after an explanation.
+      All parsing happens on-device; message content never leaves the phone.
     -->
     <uses-permission android:name="android.permission.READ_SMS" />
-
-    <!--
-      Notification listening uses a special-access service (enabled via
-      Android Settings, no runtime permission). The service is declared in a
-      later phase — nothing to declare here yet.
-    -->
 
     <application
         android:allowBackup="true"
@@ -38,6 +31,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          Notification listener: special-access service (enabled by the user in
+          Android Settings). Reads only potentially-financial notifications,
+          parses them with the same on-device parser as SMS, deduplicates
+          against stored transactions and writes to SQLite. Never any network.
+        -->
+        <service
+            android:name=".core.notify.FlowNotificationListener"
+            android:label="Flow transaction detection"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
