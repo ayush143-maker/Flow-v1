@@ -139,20 +139,33 @@ export function Sheet({
   );
 }
 
+/**
+ * Empty state with a small abstract illustration — quiet, never generic.
+ * `icon` is optional and overlays the illustration when provided.
+ */
 export function EmptyState({
   icon,
   title,
   body,
   action,
 }: {
-  icon: ReactNode;
+  icon?: ReactNode;
   title: string;
   body?: string;
   action?: ReactNode;
 }) {
   return (
     <div className="empty">
-      <div className="empty-icon">{icon}</div>
+      <div className="empty-visual" aria-hidden>
+        <svg viewBox="0 0 96 96" width="88" height="88">
+          <circle cx="38" cy="44" r="26" fill="var(--lavender)" />
+          <circle cx="58" cy="52" r="22" fill="var(--mint)" />
+          <circle cx="64" cy="34" r="14" fill="var(--soft-blue)" />
+          <path d="M20 70 A32 32 0 0 0 78 62" fill="none" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="49" cy="47" r="4.5" fill="var(--ink)" />
+        </svg>
+        {icon ? <span className="empty-icon">{icon}</span> : null}
+      </div>
       <h4 className="empty-title">{title}</h4>
       {body ? <p className="empty-body">{body}</p> : null}
       {action}
