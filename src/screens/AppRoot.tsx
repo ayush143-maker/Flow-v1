@@ -2,15 +2,17 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { Plus } from 'lucide-react';
 import logoUrl from '@/assets/brand/logo.svg';
 import { useAppStore } from '@/services/store/AppStoreProvider';
 import { useNav } from '@/navigation/NavigationProvider';
 import type { Route, TabName } from '@/navigation/types';
-import { BottomNav } from '@/components/BottomNav';
+import { BottomNavigation } from '@/components/BottomNavigation';
 import { OnboardingFlow } from '@/screens/onboarding/OnboardingFlow';
 import { HomeScreen } from '@/screens/home/HomeScreen';
 import { TransactionsScreen } from '@/screens/transactions/TransactionsScreen';
 import { TransactionDetailScreen } from '@/screens/transactions/TransactionDetailScreen';
+import { AddTransactionScreen } from '@/screens/transactions/AddTransactionScreen';
 import { InsightsScreen } from '@/screens/insights/InsightsScreen';
 import { SettingsScreen } from '@/screens/settings/SettingsScreen';
 import { CategoriesScreen } from '@/screens/settings/CategoriesScreen';
@@ -21,13 +23,15 @@ import { AppLockScreen } from '@/screens/settings/AppLockScreen';
 import { LockGate } from '@/screens/shared/LockGate';
 import { ComingSoonScreen } from '@/screens/shared/ComingSoonScreen';
 
-const LIGHT_BG = '#FFFFFF';
-const DARK_BG = '#0A0F1C';
+const LIGHT_BG = '#F7F5F2';
+const DARK_BG = '#0D0D0D';
 
 function renderRoute(route: Route): ReactNode {
   switch (route.name) {
     case 'transaction':
       return <TransactionDetailScreen id={route.id} />;
+    case 'add-transaction':
+      return <AddTransactionScreen />;
     case 'categories':
       return <CategoriesScreen />;
     case 'merchant-rules':
@@ -127,12 +131,25 @@ export function AppRoot() {
     ? `route-${nav.route.name}${'id' in nav.route ? `-${nav.route.id}` : ''}`
     : `tab-${nav.tab}`;
 
+  const showFab =
+    !nav.route && (nav.tab === 'home' || nav.tab === 'transactions');
+
   return (
     <div className="app-frame">
       <main className="screen" key={screenKey}>
         {nav.route ? renderRoute(nav.route) : tabs[nav.tab]}
       </main>
-      {!nav.route && <BottomNav tab={nav.tab} onSelect={nav.setTab} />}
+      {showFab && (
+        <button
+          type="button"
+          className="fab"
+          onClick={() => nav.push({ name: 'add-transaction' })}
+          aria-label="Add transaction"
+        >
+          <Plus size={26} strokeWidth={2} />
+        </button>
+      )}
+      {!nav.route && <BottomNavigation tab={nav.tab} onSelect={nav.setTab} />}
     </div>
   );
 }
