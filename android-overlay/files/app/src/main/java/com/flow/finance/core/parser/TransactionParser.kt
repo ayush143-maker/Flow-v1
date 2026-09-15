@@ -59,8 +59,9 @@ object TransactionParser {
         "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
     )
 
-    // Merchant name boundaries: stop at punctuation, keywords or a date.
-    private const val STOP = """\s*(?:[,.!;]|\(|VIA|FROM|FOR|REF|UPI|TXN|A/C|ON\s+\d|\z)"""
+    // Merchant name boundaries: stop at punctuation (incl. the middle dot and
+    // dashes used by payment-app notifications), keywords or a date.
+    private const val STOP = """\s*(?:[,.!;:•·|–—]|\(|VIA|FROM|FOR|REF|UPI|TXN|A/C|ON\s+\d|\z)"""
     private const val NAME = """([A-Z][A-Z0-9 &'./-]{1,34}?)"""
     private val MERCHANT_PATTERNS = listOf(
         Regex("""\bAT\s+$NAME(?=$STOP)"""),
@@ -93,10 +94,18 @@ object TransactionParser {
         if (REJECT_WORDS.any { upper.contains(it) }) return null
         if (upper.contains("HTTP") || upper.contains("WWW.")) return null
 
-        // 2) Transaction-type gate: at least one debit/credit keyword, else
-        //    this is a balance-only or informational message.
-        val debitIdx = DEBIT_WORDS.mapNotNull { upper.indexOf(it) }.minOrNull()
-        val creditIdx = CREDIT_WORDS.mapNotNull { upper.indexOf(it) }.minOrNull()
+        // 2) Transaction-type gate. NOTE: indexOf() returns -1 for absent words
+        //    and mapNotNull does NOT filter -1 — so misses MUST be turned into
+        //    real nulls here (takeIf). Otherwise both indexes are always -1 and
+        //    every transaction is misclassified as a debit.
+        val debitIdx = DEBIT_WORDS.asSequence()
+            .map { upper.indexOf(it) }
+            .filter { it >= 0 }
+            .minOrNull()
+        val creditIdx = CREDIT_WORDS.asSequence()
+            .map { upper.indexOf(it) }
+            .filter { it >= 0 }
+            .minOrNull()
         if (debitIdx == null && creditIdx == null) return null
         val type = if (creditIdx != null && (debitIdx == null || creditIdx < debitIdx)) "credit" else "debit"
 
