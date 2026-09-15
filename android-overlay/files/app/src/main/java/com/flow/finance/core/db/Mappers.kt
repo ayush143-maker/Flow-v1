@@ -24,6 +24,15 @@ object Mappers {
         return fmt.format(date)
     }
 
+    /** Parse our own ISO strings; null for anything unexpected. */
+    fun parseIsoMs(iso: String): Long? = try {
+        val fmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
+        fmt.timeZone = TimeZone.getTimeZone("UTC")
+        fmt.parse(iso)?.time
+    } catch (e: Exception) {
+        null
+    }
+
     fun sha256Hex(input: String): String {
         val digest = MessageDigest.getInstance("SHA-256").digest(input.toByteArray(Charsets.UTF_8))
         val hex = "0123456789abcdef"
