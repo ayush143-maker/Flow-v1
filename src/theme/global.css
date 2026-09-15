@@ -1,50 +1,55 @@
 /* ==========================================================================
    Flow — Design System · Foundation
-   Visual direction: bankme-inspired — warm paper background, sage accents,
-   charcoal ink, flat & airy. Light theme (default) + warm dark mode.
+   Premium minimal fintech: warm paper, near-black ink, pastel accents,
+   oversized typography, generous air. Light is the primary experience;
+   dark (#0D0D0D) mirrors the same structure.
    ========================================================================== */
 
 :root {
-  /* Accent (sage) */
-  --accent: #7FA184;
-  --accent-strong: #6C8F72;
-  --accent-soft: rgba(127, 161, 132, 0.16);
+  /* Accent — one calm teal for state, pastels for surfaces */
+  --accent: #69B9AD;
+  --accent-strong: #4E9C8F;
+  --accent-soft: rgba(105, 185, 173, 0.14);
 
-  /* Brand gradient — used sparingly (logo accents only) */
-  --brand-mint: #7FA184;
-  --brand-azure: #6C8F72;
-  --brand-violet: #A3B1A7;
-  --brand-gradient: linear-gradient(135deg, #7FA184 0%, #6C8F72 100%);
+  --lavender: #DDD7F2;
+  --lavender-soft: #EFECF8;
+  --mint: #C8E5DE;
+  --mint-soft: #E9F3EF;
+  --soft-blue: #D8E6F2;
+  --soft-blue-soft: #EBF2F8;
 
   /* Semantic */
-  --credit: #5E8C61;
-  --danger: #C67A6E;
-  --warning: #C0A25A;
+  --credit: #5FAF86;
+  --danger: #D66F72;
+  --warning: #C9A961;
 
   /* Surfaces — warm paper */
-  --bg: #F3F2ED;
-  --bg-grad: linear-gradient(#F3F2ED, #F3F2ED);
+  --bg: #F7F5F2;
+  --bg-grad: linear-gradient(#F7F5F2, #F7F5F2);
   --surface: #FFFFFF;
-  --surface-2: #F7F6F1;
-  --surface-3: #EDEBE3;
-  --ink: #1E2321;
-  --ink-2: #636E67;
-  --ink-3: #A6ADA6;
-  --line: #E9E8E1;
-  --line-strong: #DCDBD2;
-  --overlay: rgba(30, 35, 33, 0.42);
+  --surface-2: #FBFAF8;
+  --surface-3: #F1EFEA;
+  --ink: #111111;
+  --ink-2: #737373;
+  --ink-3: #A0A0A0;
+  --line: #ECEAE4;
+  --line-strong: #E0DDD5;
+  --overlay: rgba(17, 17, 17, 0.38);
 
-  --shadow-1: 0 1px 2px rgba(30, 35, 33, 0.03), 0 10px 30px rgba(30, 35, 33, 0.05);
-  --shadow-2: 0 2px 6px rgba(30, 35, 33, 0.05), 0 18px 44px rgba(30, 35, 33, 0.09);
-  --shadow-3: 0 24px 60px rgba(30, 35, 33, 0.16);
+  /* Shadows — barely there */
+  --shadow-1: 0 1px 2px rgba(17, 17, 17, 0.03);
+  --shadow-2: 0 10px 32px rgba(17, 17, 17, 0.07);
+  --shadow-3: 0 24px 64px rgba(17, 17, 17, 0.13);
 
-  /* Shape & rhythm */
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
+  /* Shape */
+  --radius-sm: 14px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
   --radius-xl: 28px;
+  --radius-xxl: 32px;
   --radius-full: 999px;
 
+  /* Rhythm */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -56,54 +61,69 @@
   /* Type */
   --font-sans: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --accent: #8FB494;
-    --accent-strong: #9DC2A2;
-    --accent-soft: rgba(143, 180, 148, 0.16);
-    --credit: #8FBF92;
-    --danger: #D69084;
+    --accent: #6FBFB2;
+    --accent-strong: #8FCFC4;
+    --accent-soft: rgba(111, 191, 178, 0.16);
+    --lavender: #2E2A3E;
+    --lavender-soft: #262233;
+    --mint: #23332F;
+    --mint-soft: #1E2B28;
+    --soft-blue: #22303C;
+    --soft-blue-soft: #1D2831;
+    --credit: #6FBF94;
+    --danger: #D98689;
     --warning: #CDB072;
-    --bg: #171A18;
-    --bg-grad: linear-gradient(#171A18, #171A18);
-    --surface: #202422;
-    --surface-2: #262B28;
-    --surface-3: #2E3430;
-    --ink: #ECEDE9;
-    --ink-2: #A4ABA4;
-    --ink-3: #71796F;
-    --line: #2A2F2C;
-    --line-strong: #383E3A;
-    --overlay: rgba(5, 8, 6, 0.6);
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.25);
-    --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.3), 0 18px 44px rgba(0, 0, 0, 0.35);
-    --shadow-3: 0 24px 60px rgba(0, 0, 0, 0.45);
+    --bg: #0D0D0D;
+    --bg-grad: linear-gradient(#0D0D0D, #0D0D0D);
+    --surface: #171717;
+    --surface-2: #1D1D1D;
+    --surface-3: #242424;
+    --ink: #F2F1EE;
+    --ink-2: #9C9C9C;
+    --ink-3: #6B6B6B;
+    --line: #232323;
+    --line-strong: #303030;
+    --overlay: rgba(0, 0, 0, 0.55);
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 10px 32px rgba(0, 0, 0, 0.5);
+    --shadow-3: 0 24px 64px rgba(0, 0, 0, 0.6);
   }
 }
 
 :root[data-theme='dark'] {
-  --accent: #8FB494;
-  --accent-strong: #9DC2A2;
-  --accent-soft: rgba(143, 180, 148, 0.16);
-  --credit: #8FBF92;
-  --danger: #D69084;
+  --accent: #6FBFB2;
+  --accent-strong: #8FCFC4;
+  --accent-soft: rgba(111, 191, 178, 0.16);
+  --lavender: #2E2A3E;
+  --lavender-soft: #262233;
+  --mint: #23332F;
+  --mint-soft: #1E2B28;
+  --soft-blue: #22303C;
+  --soft-blue-soft: #1D2831;
+  --credit: #6FBF94;
+  --danger: #D98689;
   --warning: #CDB072;
-  --bg: #171A18;
-  --bg-grad: linear-gradient(#171A18, #171A18);
-  --surface: #202422;
-  --surface-2: #262B28;
-  --surface-3: #2E3430;
-  --ink: #ECEDE9;
-  --ink-2: #A4ABA4;
-  --ink-3: #71796F;
-  --line: #2A2F2C;
-  --line-strong: #383E3A;
-  --overlay: rgba(5, 8, 6, 0.6);
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.25);
-  --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.3), 0 18px 44px rgba(0, 0, 0, 0.35);
-  --shadow-3: 0 24px 60px rgba(0, 0, 0, 0.45);
+  --bg: #0D0D0D;
+  --bg-grad: linear-gradient(#0D0D0D, #0D0D0D);
+  --surface: #171717;
+  --surface-2: #1D1D1D;
+  --surface-3: #242424;
+  --ink: #F2F1EE;
+  --ink-2: #9C9C9C;
+  --ink-3: #6B6B6B;
+  --line: #232323;
+  --line-strong: #303030;
+  --overlay: rgba(0, 0, 0, 0.55);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 10px 32px rgba(0, 0, 0, 0.5);
+  --shadow-3: 0 24px 64px rgba(0, 0, 0, 0.6);
 }
 
 /* Base ------------------------------------------------------------------- */
@@ -170,7 +190,7 @@ p {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 /* Layout primitives ------------------------------------------------------- */
@@ -196,7 +216,7 @@ p {
 @keyframes flow-rise {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -205,16 +225,16 @@ p {
 }
 
 .rise {
-  animation: flow-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: flow-rise 0.5s var(--ease-out) both;
 }
-.rise-1 {
-  animation-delay: 0.05s;
-}
-.rise-2 {
-  animation-delay: 0.12s;
-}
-.rise-3 {
-  animation-delay: 0.2s;
+.rise-1 { animation-delay: 0.05s; }
+.rise-2 { animation-delay: 0.12s; }
+.rise-3 { animation-delay: 0.2s; }
+
+/* Staggered lists: children set --i inline (see screens). */
+.stagger > * {
+  animation: flow-rise 0.45s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
 }
 
 @media (prefers-reduced-motion: reduce) {
