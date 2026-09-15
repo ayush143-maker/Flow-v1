@@ -4,8 +4,9 @@ import java.util.Calendar
 
 /**
  * Realistic Indian transaction-message corpus. Used by BOTH the JUnit test
- * suite (CI) and the in-app "Parser Test" (Developer Tools), so the two can
- * never drift apart. Pure Kotlin — no Android dependencies.
+ * suite (CI), the in-app "Parser Test" (Developer Tools) and the SMS /
+ * notification test generators — so they can never drift apart.
+ * Pure Kotlin — no Android dependencies.
  */
 object ParserFixtures {
 
@@ -17,10 +18,13 @@ object ParserFixtures {
         val expectMerchant: String? = null,
         val expectAmountMinor: Long? = null,
         val expectType: String? = null,
-        val expectCategory: String? = null
+        val expectCategory: String? = null,
+        /** Payment-app notification style (drives the notification test generator). */
+        val notificationStyle: Boolean = false
     )
 
     val FIXTURES: List<Fixture> = listOf(
+        // ------------------------------------------------------ SMS formats
         Fixture("JD-HDFCBK", "INR 499.00 debited from A/c XX1234 at SWIGGY on 12/10/25. UPI Ref 431298765432.", 3, true, "Swiggy", 49900L, "debit", "Food"),
         Fixture("VM-JIO", "Rs.799 debited from A/c XX5678 for JIO RECHARGE.", 5, true, "Jio", 79900L, "debit", "Bills"),
         Fixture("AD-PAYTM", "UPI txn of Rs 250.00 paid to UBER from your bank account. Ref 887712345678.", 1, true, "Uber", 25000L, "debit", "Travel"),
@@ -46,8 +50,22 @@ object ParserFixtures {
         Fixture("IRCTCI", "Rs 875.50 debited from A/c XX1234 for IRCTC TICKET on 14/10/25.", 1, true, "IRCTC", 87550L, "debit", "Travel"),
         Fixture("HDFCBK", "Your card ending 4321 has been blocked temporarily.", 0, false),
         Fixture("OKHDFC", "Rs 15,000 transferred from A/c XX1234 to PRIYA VERMA (UPI).", 2, true, "PRIYA VERMA", 1500000L, "debit", "Transfers"),
-        Fixture("AMAZNI", "Your Amazon order has been shipped and will arrive soon.", 0, false)
+        Fixture("AMAZNI", "Your Amazon order has been shipped and will arrive soon.", 0, false),
+        // ------------------------------------- payment-app notification formats
+        // dayOffsets deliberately mirror the SMS fixtures above so the test
+        // generators demonstrate real cross-source deduplication.
+        Fixture("Google Pay", "₹499 paid to Swiggy · UPI Ref 431298765432", 3, true, "Swiggy", 49900L, "debit", "Food", true),
+        Fixture("Google Pay", "You paid ₹1,299 to Amazon", 2, true, "Amazon", 129900L, "debit", "Shopping", true),
+        Fixture("PhonePe", "Money received: ₹500 from Ravi Kumar via UPI", 2, true, "RAVI KUMAR", 50000L, "credit", "Transfers", true),
+        Fixture("Google Pay", "₹250 paid to Uber · UPI Ref 887712345678", 1, true, "Uber", 25000L, "debit", "Travel", true),
+        Fixture("PhonePe", "Paid ₹799 for Jio recharge", 5, true, "Jio", 79900L, "debit", "Bills", true),
+        Fixture("Google Pay", "₹149 sent to Starbucks", 1, true, "Starbucks", 14900L, "debit", "Food", true),
+        Fixture("Paytm", "₹500 withdrawn from ATM", 0, true, "ATM", 50000L, "debit", "Cash", true)
     )
+
+    /** Notification-style fixtures — used by "Generate test notifications". */
+    val NOTIFICATION_TEST: List<Fixture>
+        get() = FIXTURES.filter { it.notificationStyle }
 
     data class Outcome(val fixture: Fixture, val parsed: ParsedTxn?, val reason: String?)
 
