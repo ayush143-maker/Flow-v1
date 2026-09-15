@@ -16,7 +16,7 @@ import {
 } from './backends';
 import { generateMockTransactions, generateTestTransactions } from '@/services/mock/generate';
 import type { StoreSnapshot } from '@/services/native/flow-core';
-import type { AppSettings, Profile } from '@/types';
+import type { AppSettings, Profile, Transaction } from '@/types';
 
 export { normalizeMerchant } from '@/utils/format';
 
@@ -48,6 +48,7 @@ export interface AppStore {
   addCategory(name: string, icon: string, color: string): boolean;
   updateCategory(id: string, patch: { name?: string; icon?: string; color?: string }): void;
   deleteCategory(id: string): void;
+  addManualTransaction(txn: Transaction): void;
   addTestTransactions(): void;
   clearTestData(): void;
   resetDemoData(): void;
@@ -254,6 +255,19 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     [backend, run],
   );
 
+  const addManualTransaction = useCallback(
+    (txn: Transaction) => {
+      setSnap((s) => ({
+        ...s,
+        transactions: [txn, ...s.transactions].sort((a, b) =>
+          b.transactionDate.localeCompare(a.transactionDate),
+        ),
+      }));
+      run(() => backend.insertTransactions([txn], 'append'));
+    },
+    [backend, run],
+  );
+
   const addTestTransactions = useCallback(() => {
     run(() =>
       backend.insertTransactions(generateTestTransactions(50, snapRef.current.rules), 'append'),
@@ -292,6 +306,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     addCategory,
     updateCategory,
     deleteCategory,
+    addManualTransaction,
     addTestTransactions,
     clearTestData,
     resetDemoData,
