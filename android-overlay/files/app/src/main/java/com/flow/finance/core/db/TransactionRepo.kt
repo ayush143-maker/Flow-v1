@@ -23,16 +23,63 @@ class TransactionRepo(private val helper: FlowDatabase) {
         return out
     }
 
-    fun count(): Int = countWhere(null)
+    fun count(): Int = countWhere(null, null)
 
-    fun countTest(): Int = countWhere("is_test_data = 1")
+    fun countTest(): Int = countWhere("is_test_data = 1", null)
 
-    private fun countWhere(where: String?): Int {
+    fun countBySource(source: String): Int = countWhere("source = ?", arrayOf(source))
+
+    private fun countWhere(where: String?, args: Array<String>?): Int {
         helper.readableDatabase
-            .query("transactions", arrayOf("COUNT(*)"), where, null, null, null, null)
+            .query("transactions", arrayOf("COUNT(*)"), where, args, null, null, null)
             .use { c ->
                 return if (c.moveToFirst()) c.getInt(0) else 0
             }
+    }
+
+    /** A transaction with this reference id already exists (same testness). */
+    fun refExists(refId: String, testRows: Boolean): Boolean {
+        helper.readableDatabase.query(
+            "transactions", arrayOf("1"),
+            "reference_id = ? AND is_test_data = ?",
+            arrayOf(refId, if (testRows) "1" else "0"),
+            null, null, null, "1"
+        ).use { return it.moveToFirst() }
+    }
+
+    /** Any stored row from a different source (same testness)? */
+    fun hasRowsWithOtherSource(source: String, testRows: Boolean): Boolean {
+        helper.readableDatabase.query(
+            "transactions", arrayOf("1"),
+            "source != ? AND is_test_data = ?",
+            arrayOf(source, if (testRows) "1" else "0"),
+            null, null, null, "1"
+        ).use { return it.moveToFirst() }
+    }
+
+    /**
+     * Rows sharing amount + merchant + type (same testness) as (source, iso-date)
+     * pairs — the candidate set for cross-source duplicate matching.
+     */
+    fun crossCandidates(
+        amountMinor: Long,
+        merchantNormalized: String,
+        type: String,
+        testRows: Boolean
+    ): List<Pair<String, String>> {
+        val out = ArrayList<Pair<String, String>>(4)
+        helper.readableDatabase.query(
+            "transactions",
+            arrayOf("source", "transaction_date"),
+            "amount_minor = ? AND merchant_normalized = ? AND type = ? AND is_test_data = ?",
+            arrayOf(amountMinor.toString(), merchantNormalized, type, if (testRows) "1" else "0"),
+            null, null, null, "50"
+        ).use { c ->
+            val iS = c.getColumnIndexOrThrow("source")
+            val iD = c.getColumnIndexOrThrow("transaction_date")
+            while (c.moveToNext()) out.add(Pair(c.getString(iS), c.getString(iD)))
+        }
+        return out
     }
 
     fun clearTestData(): Int =
@@ -75,7 +122,7 @@ class TransactionRepo(private val helper: FlowDatabase) {
      * Bulk insert. `replaceAll` wipes the table first (demo reset);
      * otherwise INSERT OR IGNORE skips rows whose message_hash already
      * exists (duplicate protection). Caller-provided messageHash wins over
-     * the body-derived hash so the SMS engine can include the day key.
+     * the body-derived hash so the ingestion pipeline can include the day key.
      */
     fun insertAll(arr: JSONArray, replaceAll: Boolean): Int {
         val db = helper.writableDatabase
