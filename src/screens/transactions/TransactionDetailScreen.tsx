@@ -2,10 +2,9 @@ import { useMemo, useState } from 'react';
 import { Check } from 'lucide-react';
 import { useAppStore } from '@/services/store/AppStoreProvider';
 import { useNav } from '@/navigation/NavigationProvider';
-import { MerchantAvatar, getIcon } from '@/components/icons';
+import { getIcon } from '@/components/icons';
 import { EmptyState, ScreenHeader, Sheet } from '@/components/ui';
-import { formatMoney, fullDate } from '@/utils/format';
-import { Sparkles } from 'lucide-react';
+import { dateShort, formatMoney, timeLabel } from '@/utils/format';
 import type { PaymentMethod, TransactionSource } from '@/types';
 
 const METHOD_LABEL: Record<PaymentMethod, string> = {
@@ -20,11 +19,13 @@ const METHOD_LABEL: Record<PaymentMethod, string> = {
 };
 
 const SOURCE_LABEL: Record<TransactionSource, string> = {
-  sms: 'SMS',
-  notification: 'Notification',
-  manual: 'Manual',
-  test: 'Test',
+  sms: 'Bank SMS',
+  notification: 'App notification',
+  manual: 'Added manually',
+  test: 'Test data',
 };
+
+const AUTO_SOURCES: TransactionSource[] = ['sms', 'notification'];
 
 export function TransactionDetailScreen({ id }: { id: string }) {
   const { transactions, categories, rules, applyCategory } = useAppStore();
@@ -43,7 +44,6 @@ export function TransactionDetailScreen({ id }: { id: string }) {
       <div className="pad">
         <ScreenHeader title="Transaction" onBack={nav.pop} />
         <EmptyState
-          icon={<Sparkles size={24} />}
           title="Transaction not found"
           body="It may have been removed."
         />
@@ -52,6 +52,8 @@ export function TransactionDetailScreen({ id }: { id: string }) {
   }
 
   const credit = txn.type === 'credit';
+  const automatic = AUTO_SOURCES.includes(txn.source);
+  const paymentSource = txn.metadata?.bank ?? METHOD_LABEL[txn.paymentMethod ?? 'unknown'];
 
   const pickCategory = (name: string) => {
     applyCategory(txn.id, name);
@@ -64,28 +66,32 @@ export function TransactionDetailScreen({ id }: { id: string }) {
       <ScreenHeader title="Transaction" onBack={nav.pop} />
 
       <div className="detail-hero rise">
-        <MerchantAvatar txn={txn} size={58} />
-        <h2 className="detail-merchant">{txn.merchant}</h2>
         <strong className={`detail-amount ${credit ? 'is-credit' : ''}`}>
           {credit ? '+' : '−'}
           {formatMoney(txn.amountMinor)}
         </strong>
-        <div className="detail-chips">
-          <span className="mini-chip">{credit ? 'Credit' : 'Debit'}</span>
-          <span className="mini-chip">{SOURCE_LABEL[txn.source]}</span>
-          <span className="mini-chip">{METHOD_LABEL[txn.paymentMethod ?? 'unknown']}</span>
-          {txn.isTestData && <span className="mini-chip mini-chip--test">Test data</span>}
-        </div>
+        <h2 className="detail-merchant">{txn.merchant}</h2>
+        <p className="detail-sub">
+          {txn.category} · {dateShort(new Date(txn.transactionDate))} ·{' '}
+          {timeLabel(txn.transactionDate)}
+        </p>
+        {automatic && <span className="auto-chip">Automatically detected</span>}
       </div>
 
       {savedNote && <div className="saved-note">{savedNote}</div>}
 
       <div className="card detail-list">
+        <div className="detail-row">
+          <span>Payment source</span>
+          <span className="detail-row-value">{paymentSource}</span>
+        </div>
+        <div className="detail-row">
+          <span>Detected from</span>
+          <span className="detail-row-value">{SOURCE_LABEL[txn.source]}</span>
+        </div>
         <button type="button" className="detail-row" onClick={() => setSheetOpen(true)}>
           <span>Category</span>
-          <span className="detail-row-value">
-            {txn.category}
-          </span>
+          <span className="detail-row-value">{txn.category}</span>
         </button>
         {rule && (
           <div className="detail-row">
@@ -95,24 +101,10 @@ export function TransactionDetailScreen({ id }: { id: string }) {
             </span>
           </div>
         )}
-        <div className="detail-row">
-          <span>Date &amp; time</span>
-          <span className="detail-row-value">{fullDate(txn.transactionDate)}</span>
-        </div>
-        <div className="detail-row">
-          <span>Payment method</span>
-          <span className="detail-row-value">{METHOD_LABEL[txn.paymentMethod ?? 'unknown']}</span>
-        </div>
         {txn.accountHint && (
           <div className="detail-row">
             <span>Account</span>
             <span className="detail-row-value">{txn.accountHint}</span>
-          </div>
-        )}
-        {txn.metadata?.bank && (
-          <div className="detail-row">
-            <span>Bank</span>
-            <span className="detail-row-value">{txn.metadata.bank}</span>
           </div>
         )}
         {txn.metadata?.instrument && (
@@ -131,12 +123,6 @@ export function TransactionDetailScreen({ id }: { id: string }) {
           <div className="detail-row">
             <span>Reference ID</span>
             <span className="detail-row-value detail-mono">{txn.referenceId}</span>
-          </div>
-        )}
-        {txn.messageHash && (
-          <div className="detail-row">
-            <span>Message hash</span>
-            <span className="detail-row-value detail-mono">{txn.messageHash}</span>
           </div>
         )}
       </div>
@@ -164,7 +150,10 @@ export function TransactionDetailScreen({ id }: { id: string }) {
                   className={`cat-picker-row ${txn.category === c.name ? 'is-on' : ''}`}
                   onClick={() => pickCategory(c.name)}
                 >
-                  <span className="cat-picker-icon" style={{ background: `${c.color}22`, color: c.color }}>
+                  <span
+                    className="cat-picker-icon"
+                    style={{ background: `${c.isCustom ? c.color : '#A8ADA8'}22`, color: c.isCustom ? c.color : '#737373' }}
+                  >
                     <Icon size={18} />
                   </span>
                   <span>{c.name}</span>
