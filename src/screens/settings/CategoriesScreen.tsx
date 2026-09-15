@@ -4,13 +4,15 @@ import { useAppStore } from '@/services/store/AppStoreProvider';
 import { useNav } from '@/navigation/NavigationProvider';
 import { getIcon, ICONS } from '@/components/icons';
 import { Button, ScreenHeader, Sheet } from '@/components/ui';
+import { CategoryCard } from '@/components/CategoryCard';
 import { categoryBreakdown, inRange, monthToDate } from '@/services/analytics/derive';
-import { formatMoney } from '@/utils/format';
+import { categoryColor } from '@/theme/tokens';
+import { formatMoney, monthLabel } from '@/utils/format';
 import type { Category } from '@/types';
 
 const COLOR_SWATCHES = [
-  '#FF7A59', '#F5A524', '#4ADE80', '#2FD6B3', '#38BDF8',
-  '#7C6CF0', '#A78BFA', '#F472B6', '#94A3B8', '#8B97AC',
+  '#DE9678', '#D3A45E', '#8FC98A', '#69B9AD', '#7FB3E0',
+  '#9B8FDC', '#B5A7E8', '#DE93B6', '#A6ACB8', '#A8ADA8',
 ];
 
 const ICON_KEYS = Object.keys(ICONS);
@@ -31,7 +33,7 @@ export function CategoriesScreen() {
   const [adding, setAdding] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [iconDraft, setIconDraft] = useState('others');
-  const [colorDraft, setColorDraft] = useState('#8B97AC');
+  const [colorDraft, setColorDraft] = useState('#A8ADA8');
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -50,7 +52,7 @@ export function CategoriesScreen() {
     setAdding(true);
     setNameDraft('');
     setIconDraft('others');
-    setColorDraft('#8B97AC');
+    setColorDraft('#A8ADA8');
     setError(null);
     setConfirmDelete(false);
   };
@@ -101,32 +103,26 @@ export function CategoriesScreen() {
         }
       />
 
-      <p className="cat-total">
-        {formatMoney(total)} spent this month · {rows.length} categories
-      </p>
+      <div className="cats-header">
+        <p className="cats-total">{monthLabel(now)} spending</p>
+        <strong className="cats-amount">{formatMoney(total)}</strong>
+      </div>
 
-      <div className="card">
-        {rows.map(({ cat, amountMinor, share }) => {
+      <div className="cats-grid stagger">
+        {rows.map(({ cat, amountMinor, share }, i) => {
           const Icon = getIcon(cat.icon);
+          const color = cat.isCustom ? cat.color : categoryColor(cat.name);
           return (
-            <button type="button" key={cat.id} className="cat-row" onClick={() => openEdit(cat)}>
-              <span className="cat-row-icon" style={{ background: `${cat.color}22`, color: cat.color }}>
-                <Icon size={19} />
-              </span>
-              <div className="cat-row-body">
-                <strong>
-                  {cat.name}
-                  {cat.isCustom && <span className="custom-badge">custom</span>}
-                </strong>
-                <span className="cat-bar">
-                  <span style={{ width: `${Math.round(share * 100)}%`, background: cat.color }} />
-                </span>
-              </div>
-              <div className="cat-row-nums">
-                <strong>{formatMoney(amountMinor)}</strong>
-                <span>{Math.round(share * 100)}%</span>
-              </div>
-            </button>
+            <div key={cat.id} style={{ '--i': String(i) } as React.CSSProperties}>
+              <CategoryCard
+                icon={Icon}
+                name={cat.name}
+                color={color}
+                amountMinor={amountMinor}
+                share={share}
+                onClick={() => openEdit(cat)}
+              />
+            </div>
           );
         })}
       </div>
@@ -175,7 +171,9 @@ export function CategoriesScreen() {
         </div>
 
         <div className="sheet-actions">
-          <Button block onClick={save}>{adding ? 'Add category' : 'Save changes'}</Button>
+          <Button block onClick={save}>
+            {adding ? 'Add category' : 'Save changes'}
+          </Button>
           {editing?.isCustom && (
             <Button
               block
