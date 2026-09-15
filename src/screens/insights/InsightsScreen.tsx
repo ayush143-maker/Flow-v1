@@ -1,14 +1,15 @@
 import { useMemo, useState } from 'react';
 import {
-  Banknote, ChevronRight, Repeat, Sparkles, TrendingDown, TrendingUp, UtensilsCrossed,
-  type LucideIcon,
+  Banknote, ChevronRight, Repeat, Sparkles, TrendingDown, TrendingUp,
+  UtensilsCrossed, type LucideIcon,
 } from 'lucide-react';
 import { useAppStore } from '@/services/store/AppStoreProvider';
 import { useNav } from '@/navigation/NavigationProvider';
 import { BarChart } from '@/components/charts';
-import { MerchantAvatar } from '@/components/icons';
 import { TransactionRow } from '@/components/TransactionRow';
 import { Button, EmptyState, SegmentedControl } from '@/components/ui';
+import { SectionHeader } from '@/components/SectionHeader';
+import { InsightCard, type InsightTone } from '@/components/InsightCard';
 import {
   buckets,
   categoryBreakdown,
@@ -20,6 +21,7 @@ import {
 } from '@/services/analytics/derive';
 import { detectRecurring, monthlyEquivalentMinor } from '@/services/analytics/recurring';
 import { generateInsights, type Insight } from '@/services/analytics/insights';
+import { categoryColor } from '@/theme/tokens';
 import { formatMoney, formatMoneyCompact, percentChange } from '@/utils/format';
 
 const MODES: { value: PeriodMode; label: string }[] = [
@@ -41,6 +43,13 @@ const INSIGHT_ICONS: Record<string, LucideIcon> = {
   food: UtensilsCrossed,
   cash: Banknote,
   sparkles: Sparkles,
+};
+
+const TONE_MAP: Record<Insight['tone'], InsightTone> = {
+  up: 'negative',
+  down: 'positive',
+  info: 'neutral',
+  warn: 'negative',
 };
 
 export function InsightsScreen() {
@@ -89,12 +98,11 @@ export function InsightsScreen() {
       <div className="pad">
         <h1 className="screen-title">Insights</h1>
         <EmptyState
-          icon={<Sparkles size={24} />}
-          title="No data to analyze yet"
-          body="Once transactions are detected, insights appear here — computed on-device."
+          title="Nothing to analyze yet."
+          body="Once Flow detects your first transaction, insights will appear here — computed on your device."
           action={
             <Button size="sm" variant="secondary" onClick={() => nav.push({ name: 'developer' })}>
-              Developer Tools
+              Developer tools
             </Button>
           }
         />
@@ -107,34 +115,53 @@ export function InsightsScreen() {
       <h1 className="screen-title">Insights</h1>
       <SegmentedControl options={MODES} value={mode} onChange={setMode} />
 
-      <section className="hero-card">
-        <p className="hero-label">{PERIOD_TITLE[mode]}</p>
+      <section className="hero rise rise-1">
         <strong className="hero-amount">{formatMoney(cur.totalMinor)}</strong>
-        <div className="hero-meta">
-          <span>~{formatMoney(cur.avgDailyMinor)}/day</span>
+        <p className="hero-caption">
+          spent · {PERIOD_TITLE[mode].toLowerCase()}
           <span className={`hero-delta ${pct === null ? '' : pct < 0 ? 'is-good' : 'is-bad'}`}>
-            {pct === null ? 'No comparison' : `${pct < 0 ? '↓' : '↑'} ${Math.abs(pct)}% vs prev`}
+            {pct === null ? 'No comparison' : `${pct < 0 ? '↓' : '↑'} ${Math.abs(pct)}%`}
           </span>
-        </div>
+        </p>
+        <p className="page-sub" style={{ margin: '10px 0 0' }}>
+          ~{formatMoney(cur.avgDailyMinor)} a day, on average
+        </p>
       </section>
 
-      <section className="card section">
-        <div className="section-head">
-          <h3>Spending trend</h3>
-        </div>
+      {insights.length > 0 && (
+        <section className="rise rise-2" style={{ marginBottom: 24 }}>
+          <SectionHeader title="This month, in words" />
+          <div className="ins-list">
+            {insights.map((ins) => {
+              const Icon = INSIGHT_ICONS[ins.icon] ?? Sparkles;
+              return (
+                <InsightCard
+                  key={ins.id}
+                  tone={TONE_MAP[ins.tone]}
+                  title={ins.title}
+                  detail={ins.detail}
+                  icon={<Icon size={16} />}
+                />
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      <section className="card section rise rise-2">
+        <SectionHeader title="Spending trend" />
         <BarChart bars={bars} height={110} showLabels />
       </section>
 
-      <section className="card section">
-        <div className="section-head">
-          <h3>Category trends</h3>
-        </div>
+      <section className="card section rise rise-2">
+        <SectionHeader title="Category trends" />
         <ul className="cat-trend-list">
           {curBd.slice(0, 6).map((c) => {
             const prevAmt = prevBd.find((p) => p.category === c.category)?.amountMinor ?? 0;
             const delta = percentChange(c.amountMinor, prevAmt);
             return (
               <li key={c.category} className="cat-trend-row">
+                <span className="txn-dot" style={{ background: categoryColor(c.category) }} />
                 <span className="legend-name">{c.category}</span>
                 <span className="legend-val">{formatMoneyCompact(c.amountMinor)}</span>
                 <span className={`delta-chip ${delta === null ? '' : delta < 0 ? 'is-good' : 'is-bad'}`}>
@@ -146,47 +173,50 @@ export function InsightsScreen() {
         </ul>
       </section>
 
-      <section className="card section">
-        <div className="section-head">
-          <h3>Top merchants</h3>
-        </div>
+      <section className="card section rise rise-3">
+        <SectionHeader title="Top merchants" />
         <ul className="txn-list">
-          {topM.map((m) => {
-            const sample = curTxns.find((t) => t.merchantNormalized === m.merchantNormalized);
-            return sample ? (
-              <li key={m.merchantNormalized} className="topm-row">
-                <MerchantAvatar txn={sample} size={38} />
-                <span className="txn-info">
-                  <span className="txn-merchant">{m.merchant}</span>
-                  <span className="txn-sub">{m.count} {m.count === 1 ? 'txn' : 'txns'}</span>
+          {topM.map((m) => (
+            <li key={m.merchantNormalized} className="topm-row">
+              <span className="txn-dot" style={{ background: categoryColor('Transfers') }} />
+              <span className="txn-info">
+                <span className="txn-merchant">{m.merchant}</span>
+                <span className="txn-sub">
+                  {m.count} {m.count === 1 ? 'transaction' : 'transactions'}
                 </span>
-                <span className="txn-amount">{formatMoney(m.amountMinor)}</span>
-              </li>
-            ) : null;
-          })}
-        </ul>
-      </section>
-
-      <section className="card section">
-        <div className="section-head">
-          <h3>Largest transactions</h3>
-        </div>
-        <ul className="txn-list">
-          {largest.map((t) => (
-            <li key={t.id}>
-              <TransactionRow txn={t} onClick={() => nav.push({ name: 'transaction', id: t.id })} />
+              </span>
+              <span className="txn-amount">{formatMoney(m.amountMinor)}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      <button type="button" className="card section rec-link" onClick={() => nav.push({ name: 'recurring' })}>
-        <div className="section-head">
-          <h3>Recurring payments</h3>
-          <span className="section-link">
-            View all <ChevronRight size={14} />
-          </span>
-        </div>
+      {largest.length > 0 && (
+        <section className="card section rise rise-3">
+          <SectionHeader title="Largest transactions" />
+          <ul className="txn-list">
+            {largest.map((t) => (
+              <li key={t.id}>
+                <TransactionRow txn={t} onClick={() => nav.push({ name: 'transaction', id: t.id })} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <button
+        type="button"
+        className="card section rec-link rise rise-3"
+        onClick={() => nav.push({ name: 'recurring' })}
+      >
+        <SectionHeader
+          title="Recurring payments"
+          action={
+            <span className="section-link">
+              View all <ChevronRight size={14} />
+            </span>
+          }
+        />
         <p className="rec-summary">
           {recurring.length > 0 ? (
             <>
@@ -198,33 +228,6 @@ export function InsightsScreen() {
           )}
         </p>
       </button>
-
-      <section className="card section">
-        <div className="section-head">
-          <h3>Signals</h3>
-          <span className="section-month">computed on-device</span>
-        </div>
-        <ul className="signal-list">
-          {insights.map((ins) => {
-            const Icon = INSIGHT_ICONS[ins.icon] ?? Sparkles;
-            return <SignalRow key={ins.id} insight={ins} Icon={Icon} />;
-          })}
-        </ul>
-      </section>
     </div>
-  );
-}
-
-function SignalRow({ insight, Icon }: { insight: Insight; Icon: LucideIcon }) {
-  return (
-    <li className={`signal signal--${insight.tone}`}>
-      <span className="signal-icon">
-        <Icon size={18} />
-      </span>
-      <div className="signal-body">
-        <p className="signal-title">{insight.title}</p>
-        <p className="signal-detail">{insight.detail}</p>
-      </div>
-    </li>
   );
 }
