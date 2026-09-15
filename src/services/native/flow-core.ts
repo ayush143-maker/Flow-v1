@@ -3,8 +3,8 @@ import type { AppSettings, Category, MerchantRule, Profile, Transaction } from '
 
 /**
  * FlowCore — the single custom native plugin (Kotlin, android app module).
- * It owns SQLite storage (Phase 3), the SMS reader + parser (Phase 4), and
- * later the notification listener and cross-source dedup. Every method is
+ * It owns SQLite storage (Phase 3), the SMS reader + parser (Phase 4), the
+ * notification listener + cross-source dedup (Phase 5+6). Every method is
  * typed here so the UI never guesses.
  */
 
@@ -34,6 +34,20 @@ export interface SmsSyncResult {
   parsed: number;
   inserted: number;
   duplicates: number;
+}
+
+/** One notification test pass through the real ingestion pipeline. */
+export interface TestNotificationResult {
+  inserted: number;
+  duplicates: number;
+}
+
+/** Live state of the notification pipeline. */
+export interface NotificationStats {
+  listenerEnabled: boolean;
+  listenerBound: boolean;
+  processingEnabled: boolean;
+  notificationTransactions: number;
 }
 
 export interface ParserTestFailure {
@@ -78,6 +92,9 @@ export interface FlowCorePlugin extends Plugin {
 
   syncSms(): Promise<SmsSyncResult>;
   generateTestSms(): Promise<InsertResult>;
+  generateTestNotification(): Promise<TestNotificationResult>;
+  getNotificationStats(): Promise<NotificationStats>;
+  requestNotificationRebind(): Promise<void>;
   runParserTests(): Promise<ParserTestResult>;
 
   getSnapshot(): Promise<StoreSnapshot>;
@@ -132,6 +149,18 @@ export function syncSms(): Promise<SmsSyncResult> {
 
 export function generateTestSms(): Promise<InsertResult> {
   return FlowCore.generateTestSms();
+}
+
+export function generateTestNotification(): Promise<TestNotificationResult> {
+  return FlowCore.generateTestNotification();
+}
+
+export function getNotificationStats(): Promise<NotificationStats> {
+  return FlowCore.getNotificationStats();
+}
+
+export function requestNotificationRebind(): Promise<void> {
+  return FlowCore.requestNotificationRebind();
 }
 
 export function runParserTests(): Promise<ParserTestResult> {
