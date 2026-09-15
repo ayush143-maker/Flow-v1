@@ -12,7 +12,8 @@
  *   3. Patches android/build.gradle to add the Kotlin Gradle plugin.
  *   4. Patches android/app/build.gradle: Kotlin plugin + Java/Kotlin at 21
  *      (21 matches Capacitor 7's own Java level and the CI JDK).
- *   5. Adds JUnit test dependencies so the parser test suite runs in CI.
+ *   5. Adds JUnit dependencies AND verbose test logging, so unit-test
+ *      failures (messages + stdout) are fully visible in the CI log.
  *   6. Patches res/values/styles.xml: opts OUT of Android 15 edge-to-edge so
  *      the WebView lays out BELOW the status bar.
  *
@@ -116,7 +117,8 @@ if (!rootGradle.includes('kotlin-gradle-plugin')) {
   console.log('  ~ android/build.gradle: Kotlin plugin added');
 }
 
-// 4) + 5) Patch android/app/build.gradle — Kotlin plugin, targets at 21, JUnit.
+// 4) + 5) Patch android/app/build.gradle — Kotlin plugin, targets at 21,
+//    JUnit + verbose test logging.
 const appGradlePath = join(ANDROID_DIR, 'app/build.gradle');
 if (!existsSync(appGradlePath)) fail('android/app/build.gradle not found.');
 let appGradle = readFileSync(appGradlePath, 'utf8');
@@ -137,7 +139,7 @@ appGradle = `${appGradle
 appGradle = mustReplace(
   appGradle,
   /^android\s*\{/m,
-  `android {\n    compileOptions {\n        sourceCompatibility JavaVersion.VERSION_${JAVA_VERSION}\n        targetCompatibility JavaVersion.VERSION_${JAVA_VERSION}\n    }\n    kotlinOptions {\n        jvmTarget = '${JAVA_VERSION}'\n    }`,
+  `android {\n    compileOptions {\n        sourceCompatibility JavaVersion.VERSION_${JAVA_VERSION}\n        targetCompatibility JavaVersion.VERSION_${JAVA_VERSION}\n    }\n    kotlinOptions {\n        jvmTarget = '${JAVA_VERSION}'\n    }\n    testOptions {\n        unitTests.all {\n            testLogging {\n                events "failed", "passed", "skipped"\n                showStandardStreams = true\n                exceptionFormat "full"\n            }\n        }\n    }`,
   'android/app/build.gradle (android block)',
 );
 
@@ -151,7 +153,7 @@ if (!appGradle.includes('junit:junit')) {
   console.log('  ~ android/app/build.gradle: JUnit added for the parser test suite');
 }
 writeFileSync(appGradlePath, appGradle);
-console.log(`  ~ android/app/build.gradle: Kotlin enabled · Java ${JAVA_VERSION} · Kotlin target ${JAVA_VERSION}`);
+console.log(`  ~ android/app/build.gradle: Kotlin enabled · Java ${JAVA_VERSION} · Kotlin target ${JAVA_VERSION} · verbose test logging`);
 
 // 6) Patch res/values/styles.xml — opt out of Android 15+ edge-to-edge.
 const stylesPath = join(ANDROID_DIR, 'app/src/main/res/values/styles.xml');
