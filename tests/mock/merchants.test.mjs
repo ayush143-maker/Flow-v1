@@ -108,3 +108,7 @@ test("recurring merchant specs use zero random occurrence rate", () => {
 test("every credit entry has a usable amount range", () => {
   assert.ok(MERCHANTS.filter((m) => m.credit).every((m) => m.maxMinor >= m.minMinor));
 });
+
+test("merchant names have no surrounding whitespace", () => {
+  assert.ok(MERCHANTS.every((m) => m.name === m.name.trim()));
+});
