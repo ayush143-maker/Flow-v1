@@ -76,3 +76,8 @@ test('limits the insight list to five entries', () => {
   ];
   assert.equal(generateInsights(rows, new Date(2024, 1, 15)).length, 5);
 });
+
+test("does not report subscriptions when no subscription debit exists", () => {
+  const rows = [tx(5, 1, { category: 'Food' })];
+  assert.equal(generateInsights(rows, new Date(2024, 1, 15)).some((x) => x.id === 'subs'), false);
+});
