@@ -115,3 +115,7 @@ test("returns the first day of the month", () => {
 test("counts leap February correctly", () => {
   assert.equal(format.daysInMonth(new Date(2024, 1, 5)), 29);
 });
+
+test("counts non-leap February correctly", () => {
+  assert.equal(format.daysInMonth(new Date(2023, 1, 5)), 28);
+});
