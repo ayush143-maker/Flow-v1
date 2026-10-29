@@ -49,3 +49,7 @@ test("credit catalogue entries are explicitly flagged", () => {
 test("savings account exposes a display hint", () => {
   assert.ok(ACCOUNTS.savings.hint.length > 0);
 });
+
+test("card account exposes a display hint", () => {
+  assert.ok(ACCOUNTS.card.hint.length > 0);
+});
