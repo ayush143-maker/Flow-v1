@@ -175,3 +175,7 @@ test("omits the year for a date in the current year", () => {
 test("formats time labels as readable text", () => {
   assert.match(format.timeLabel(new Date(2024,0,1,13,5).toISOString()), /\d/);
 });
+
+test("combines date and time in the full date helper", () => {
+  assert.ok(format.fullDate(new Date(2024,0,1,13,5).toISOString()).includes('·'));
+});
