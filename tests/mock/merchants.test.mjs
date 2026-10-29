@@ -25,3 +25,7 @@ test('merchant values use non-negative minor units', () => {
 test("merchant payment methods are populated", () => {
   assert.ok(MERCHANTS.every((m) => ['upi','card','netbanking','atm','wallet','bank_transfer','cash','unknown'].includes(m.method)));
 });
+
+test("merchant icons are non-empty", () => {
+  assert.ok(MERCHANTS.every((m) => typeof m.icon === 'string' && m.icon.length > 0));
+});
