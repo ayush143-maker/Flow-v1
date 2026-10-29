@@ -149,3 +149,8 @@ test("rounds the median for an even number of occurrences", () => {
   const found = recurring.detectRecurring([tx(1, { amountMinor: 10000 }), tx(31, { amountMinor: 11001 })]);
   assert.equal(found[0].amountMinor, 10501);
 });
+
+test("ignores intervening credits when grouping debits", () => {
+  const rows = [tx(1), tx(10, { type: 'credit' }), tx(31)];
+  assert.equal(recurring.detectRecurring(rows).length, 1);
+});
