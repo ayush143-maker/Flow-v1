@@ -14,7 +14,8 @@
     "preview": "vite preview",
     "icons": "node scripts/generate-icons.mjs",
     "cap:sync": "npm run build && npx cap sync android",
-    "overlay": "node android-overlay/apply.mjs"
+    "overlay": "node android-overlay/apply.mjs",
+    "test": "node --test"
   },
   "dependencies": {
     "@capacitor/app": "^7.0.0",
