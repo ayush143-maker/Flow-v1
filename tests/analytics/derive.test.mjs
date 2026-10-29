@@ -117,3 +117,8 @@ test('yearly trend emits twelve monthly buckets', () => {
 test('weekly trend emits seven day buckets', () => {
   assert.equal(analytics.buckets([], 'weekly', new Date(2024, 0, 10)).length, 7);
 });
+
+test("debit filter preserves relative order", () => {
+  const rows = [tx({ id: 'first' }), tx({ id: 'credit', type: 'credit' }), tx({ id: 'last' })];
+  assert.deepEqual(analytics.debits(rows).map((x) => x.id), ['first', 'last']);
+});
