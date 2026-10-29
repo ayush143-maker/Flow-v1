@@ -42,3 +42,7 @@ test("keeps generated test amounts non-negative", () => {
 test("normalizes the merchant key consistently", () => {
   assert.ok(mock.generateTestTransactions(20).every((t) => t.merchantNormalized === t.merchant.toUpperCase().replace(/[^A-Z0-9 ]/g, '').replace(/\s+/g, ' ').trim()));
 });
+
+test("adds source messages to generated test transactions", () => {
+  assert.ok(mock.generateTestTransactions(10).every((t) => typeof t.originalMessage === 'string' && t.originalMessage.length > 0));
+});
