@@ -147,3 +147,181 @@ test("normalizes punctuation-only merchant names to an empty key", () => {
 test("preserves date arithmetic over year boundaries", () => {
   assert.equal(format.addDays(new Date(2023, 11, 31), 1).getFullYear(), 2024);
 });
+
+test("creates IDs with the requested prefix", () => {
+  assert.match(format.newId('txn'), /^txn_/);
+});
+
+test("creates non-empty IDs without a prefix", () => {
+  assert.ok(format.newId().length > 0);
+});
+
+test("creates distinct IDs for separate calls", () => {
+  assert.notEqual(format.newId('x'), format.newId('x'));
+});
+
+test("formats day and month consistently", () => {
+  assert.equal(format.dayMonth(new Date(2024, 0, 2).toISOString()), '2 Jan');
+});
+
+test("includes the year for a date from an older year", () => {
+  assert.equal(format.dateShort(new Date(2023, 0, 2), new Date(2024, 5, 1)), '2 Jan 2023');
+});
+
+test("omits the year for a date in the current year", () => {
+  assert.equal(format.dateShort(new Date(2024, 0, 2), new Date(2024, 5, 1)), '2 Jan');
+});
+
+test("formats time labels as readable text", () => {
+  assert.match(format.timeLabel(new Date(2024,0,1,13,5).toISOString()), /\d/);
+});
+
+test("combines date and time in the full date helper", () => {
+  assert.ok(format.fullDate(new Date(2024,0,1,13,5).toISOString()).includes('·'));
+});
+
+test("handles a non-leap thirty-day month", () => {
+  assert.equal(format.daysInMonth(new Date(2024, 3, 20)), 30);
+});
+
+test("handles a thirty-one-day month", () => {
+  assert.equal(format.daysInMonth(new Date(2024, 0, 20)), 31);
+});
+
+test("formats zero rupees without a decimal suffix", () => {
+  assert.equal(format.formatMoney(0), '₹0');
+});
+
+test("formats paise below one rupee with two decimals", () => {
+  assert.equal(format.formatMoney(75), '₹0.75');
+});
+
+test("compact formatter rounds sub-thousand rupees", () => {
+  assert.equal(format.formatMoneyCompact(99900), '₹999');
+});
+
+test("reports no percentage change when previous amount is zero", () => {
+  assert.equal(format.percentChange(0, 0), null);
+});
+
+test("computes a twenty-five-percent increase", () => {
+  assert.equal(format.percentChange(125, 100), 25);
+});
+
+test("computes a twenty-five-percent decrease", () => {
+  assert.equal(format.percentChange(75, 100), -25);
+});
+
+test("normalizes tabs as merchant whitespace", () => {
+  assert.equal(format.normalizeMerchant('Alpha\tBeta'), 'ALPHA BETA');
+});
+
+test("normalizes newlines as merchant whitespace", () => {
+  assert.equal(format.normalizeMerchant('Alpha\nBeta'), 'ALPHA BETA');
+});
+
+test("does not treat punctuation as merchant identity", () => {
+  assert.equal(format.normalizeMerchant('A-B'), format.normalizeMerchant('AB'));
+});
+
+test("preserves numeric merchant characters", () => {
+  assert.equal(format.normalizeMerchant('Store 123'), 'STORE 123');
+});
+
+test("compact formatter uses k suffix for one thousand rupees", () => {
+  assert.equal(format.formatMoneyCompact(100000), '₹1.0k');
+});
+
+test("compact formatter uses lakh suffix at one lakh rupees", () => {
+  assert.equal(format.formatMoneyCompact(10000000), '₹1.0L');
+});
+
+test("compact formatter uses crore suffix at one crore rupees", () => {
+  assert.equal(format.formatMoneyCompact(1000000000), '₹1.0Cr');
+});
+
+test("month label does not include a day number", () => {
+  assert.equal(format.monthLabel(new Date(2024, 0, 29)), 'January');
+});
+
+test("start of day clears milliseconds", () => {
+  assert.equal(format.startOfDay(new Date(2024, 0, 1, 8, 9, 10, 555)).getMilliseconds(), 0);
+});
+
+test("start of day clears minutes", () => {
+  assert.equal(format.startOfDay(new Date(2024, 0, 1, 8, 9, 10)).getMinutes(), 0);
+});
+
+test("add days supports a negative offset", () => {
+  assert.equal(format.addDays(new Date(2024, 0, 10), -3).getDate(), 7);
+});
+
+test("start of month clears the time component", () => {
+  assert.equal(format.startOfMonth(new Date(2024, 5, 9, 18, 45)).getHours(), 0);
+});
+
+test("percent change rounds fractional percentages", () => {
+  assert.equal(format.percentChange(2, 3), -33);
+});
+
+test("percent change handles a large increase", () => {
+  assert.equal(format.percentChange(2000, 100), 1900);
+});
+
+test("percent change handles identical values", () => {
+  assert.equal(format.percentChange(100, 100), 0);
+});
+
+test("FNV hash returns eight lowercase hex characters", () => {
+  assert.match(format.fnv1a('Flow app'), /^[0-9a-f]{8}$/);
+});
+
+test("merchant normalization trims whitespace", () => {
+  assert.equal(format.normalizeMerchant('  Store  '), 'STORE');
+});
+
+test("date short returns a non-empty result", () => {
+  assert.ok(format.dateShort(new Date(2024, 0, 2), new Date(2024, 5, 1)).length > 0);
+});
+
+test("time label contains minutes", () => {
+  assert.match(format.timeLabel(new Date(2024, 0, 1, 9, 7).toISOString()), /07/);
+});
+
+test("full date includes a four-digit year", () => {
+  assert.match(format.fullDate(new Date(2024, 0, 1, 9, 7).toISOString()), /2024/);
+});
+
+test("day label falls back to a date for older entries", () => {
+  const label = format.dayLabel(new Date(2023,0,1).toISOString(), new Date(2024,0,10));
+  assert.ok(label.length > 0 && label !== 'Today' && label !== 'Yesterday');
+});
+
+test("formatting preserves INR currency notation", () => {
+  assert.match(format.formatMoney(12345), /₹/);
+});
+
+test("month start remains the first day after adding no offset", () => {
+  assert.equal(format.startOfMonth(new Date(2024,8,30)).getDate(), 1);
+});
+
+test("adding zero days preserves the calendar date", () => {
+  assert.equal(format.addDays(new Date(2024,4,14), 0).getDate(), 14);
+});
+
+test("merchant normalizer is idempotent", () => {
+  const once = format.normalizeMerchant('Mixed  Store-Name 2');
+  assert.equal(format.normalizeMerchant(once), once);
+});
+
+test("date short output contains the day number", () => {
+  assert.match(format.dateShort(new Date(2024,0,2), new Date(2024,5,1)), /2/);
+});
+
+test("compact values preserve a rupee prefix", () => {
+  assert.match(format.formatMoneyCompact(150000), /^₹/);
+});
+
+test("FNV output is stable over repeated calls", () => {
+  assert.equal(format.fnv1a('same'), format.fnv1a('same'));
+});

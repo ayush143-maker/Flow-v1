@@ -1,0 +1,169 @@
+import { after, before, test } from 'node:test';
+import assert from 'node:assert/strict';
+import { createServer } from 'vite';
+
+let server;
+let recurring;
+before(async () => {
+  server = await createServer({ configFile: 'vite.config.ts', server: { middlewareMode: true }, appType: 'custom' });
+  recurring = await server.ssrLoadModule('/src/services/analytics/recurring.ts');
+});
+after(async () => { await server?.close(); });
+
+function tx(day, overrides = {}) {
+  const date = new Date(2024, 0, day, 12).toISOString();
+  return {
+    id: String(day), amountMinor: 10000, currency: 'INR', merchant: 'Stream',
+    merchantNormalized: 'STREAM', category: 'Subscriptions', type: 'debit',
+    source: 'manual', paymentMethod: null, accountHint: null,
+    transactionDate: date, createdAt: date, originalMessage: null,
+    messageHash: 'hash-' + day, referenceId: null, isTestData: false, metadata: null,
+    ...overrides,
+  };
+}
+
+test('does not infer a recurring payment from one transaction', () => {
+  assert.deepEqual(recurring.detectRecurring([tx(1)]), []);
+});
+test('ignores credit transactions when detecting recurring debits', () => {
+  assert.deepEqual(recurring.detectRecurring([tx(1, { type: 'credit' }), tx(31, { type: 'credit' })]), []);
+});
+test('recognizes roughly monthly debit intervals', () => {
+  const found = recurring.detectRecurring([tx(1), tx(31)]);
+  assert.equal(found.length, 1);
+  assert.equal(found[0].frequency, 'monthly');
+  assert.equal(found[0].merchantNormalized, 'STREAM');
+});
+test('recognizes weekly debit intervals', () => {
+  const found = recurring.detectRecurring([tx(1), tx(8)]);
+  assert.equal(found.length, 1);
+  assert.equal(found[0].frequency, 'weekly');
+});
+test('rejects a merchant whose intervals vary too widely', () => {
+  const rows = [tx(1), tx(26), tx(31)];
+  assert.equal(recurring.detectRecurring(rows).length, 0);
+});
+test('rejects a recurring group with a large amount swing', () => {
+  const rows = [tx(1, { amountMinor: 10000 }), tx(31, { amountMinor: 14000 })];
+  assert.equal(recurring.detectRecurring(rows).length, 0);
+});
+test('uses the median amount for an odd number of occurrences', () => {
+  const rows = [tx(1, { amountMinor: 10000 }), tx(31, { amountMinor: 11000 }), tx(60, { amountMinor: 12000 })];
+  const found = recurring.detectRecurring(rows);
+  assert.equal(found.length, 1);
+  assert.equal(found[0].amountMinor, 11000);
+});
+test('marks a two-occurrence recurrence as an estimate', () => {
+  assert.equal(recurring.detectRecurring([tx(1), tx(31)])[0].isEstimate, true);
+});
+test('predicts the next date from the last observed date', () => {
+  const rows = [tx(1), tx(31)];
+  const found = recurring.detectRecurring(rows)[0];
+  assert.equal(new Date(found.nextExpected).getTime(), new Date(rows[1].transactionDate).getTime() + 30 * 86400000);
+});
+test('keeps monthly equivalent unchanged for monthly payments', () => {
+  assert.equal(recurring.monthlyEquivalentMinor({ frequency: 'monthly', amountMinor: 12000 }), 12000);
+});
+
+test("converts weekly payments to a monthly equivalent", () => {
+  assert.equal(recurring.monthlyEquivalentMinor({ frequency: 'weekly', amountMinor: 43300 }), 10000);
+});
+
+test("converts quarterly payments to a monthly equivalent", () => {
+  assert.equal(recurring.monthlyEquivalentMinor({ frequency: 'quarterly', amountMinor: 30000 }), 10000);
+});
+
+test("converts yearly payments to a monthly equivalent", () => {
+  assert.equal(recurring.monthlyEquivalentMinor({ frequency: 'yearly', amountMinor: 120000 }), 10000);
+});
+
+test("sorts recurring payments by monthly equivalent descending", () => {
+  const rows = [tx(1, { merchantNormalized: 'LOW', amountMinor: 3000 }), tx(1, { id: 'high1', merchantNormalized: 'HIGH', amountMinor: 9000 }), tx(31, { id: 'high2', merchantNormalized: 'HIGH', amountMinor: 9000 })];
+  const found = recurring.detectRecurring(rows);
+  assert.equal(found[0].merchantNormalized, 'HIGH');
+});
+
+test("does not combine separate merchant keys", () => {
+  const rows = [tx(1, { merchantNormalized: 'A' }), tx(31, { merchantNormalized: 'B' })];
+  assert.deepEqual(recurring.detectRecurring(rows), []);
+});
+
+test("keeps the merchant label from the most recent transaction", () => {
+  const rows = [tx(1, { merchant: 'Streaming' }), tx(31, { merchant: 'STREAMING*SUB' })];
+  assert.equal(recurring.detectRecurring(rows)[0].merchant, 'STREAMING*SUB');
+});
+
+test("returns an ISO timestamp for the next expected date", () => {
+  const next = recurring.detectRecurring([tx(1), tx(31)])[0].nextExpected;
+  assert.ok(Number.isFinite(Date.parse(next)));
+});
+
+test("accepts a monthly interval near thirty days", () => {
+  assert.equal(recurring.detectRecurring([tx(1), tx(30)])[0].frequency, 'monthly');
+});
+
+test("does not mark an exact thirty-day two-point interval as certain", () => {
+  assert.equal(recurring.detectRecurring([tx(1), tx(31)])[0].isEstimate, true);
+});
+
+test("accepts a consistent amount difference below the variance threshold", () => {
+  const rows = [tx(1, { amountMinor: 10000 }), tx(31, { amountMinor: 12500 })];
+  assert.equal(recurring.detectRecurring(rows).length, 1);
+});
+
+test("rejects an interval shorter than the weekly minimum", () => {
+  assert.deepEqual(recurring.detectRecurring([tx(1), tx(5)]), []);
+});
+
+test("rejects an interval between weekly and monthly bands", () => {
+  assert.deepEqual(recurring.detectRecurring([tx(1), tx(11)]), []);
+});
+
+test("recognizes a quarterly interval around ninety days", () => {
+  const found = recurring.detectRecurring([tx(1), tx(91)]);
+  assert.equal(found.length, 1);
+  assert.equal(found[0].frequency, 'quarterly');
+});
+
+test("recognizes a yearly interval around 365 days", () => {
+  const found = recurring.detectRecurring([tx(1), tx(366)]);
+  assert.equal(found.length, 1);
+  assert.equal(found[0].frequency, 'yearly');
+});
+
+test("accepts a ten-day spread between monthly intervals", () => {
+  const found = recurring.detectRecurring([tx(1), tx(26), tx(61)]);
+  assert.equal(found.length, 1);
+  assert.equal(found[0].frequency, 'monthly');
+});
+
+test("allows an amount ratio at the stated 1.3 cutoff", () => {
+  assert.equal(recurring.detectRecurring([tx(1, { amountMinor: 10000 }), tx(31, { amountMinor: 13000 })]).length, 1);
+});
+
+test("rejects an amount ratio just above the 1.3 cutoff", () => {
+  assert.equal(recurring.detectRecurring([tx(1, { amountMinor: 10000 }), tx(31, { amountMinor: 13100 })]).length, 0);
+});
+
+test("rounds the median for an even number of occurrences", () => {
+  const found = recurring.detectRecurring([tx(1, { amountMinor: 10000 }), tx(31, { amountMinor: 11001 })]);
+  assert.equal(found[0].amountMinor, 10501);
+});
+
+test("ignores intervening credits when grouping debits", () => {
+  const rows = [tx(1), tx(10, { type: 'credit' }), tx(31)];
+  assert.equal(recurring.detectRecurring(rows).length, 1);
+});
+
+test("returns no recurring payments for an empty history", () => {
+  assert.deepEqual(recurring.detectRecurring([]), []);
+});
+
+test("marks a next expected date as parseable ISO text", () => {
+  const value = recurring.detectRecurring([tx(1), tx(31)])[0].nextExpected;
+  assert.match(value, /^\d{4}-\d{2}-\d{2}T/);
+});
+
+test("uses monthly equivalent for ranking rather than raw yearly amount", () => {
+  assert.equal(recurring.monthlyEquivalentMinor({ frequency: 'yearly', amountMinor: 240000 }), 20000);
+});

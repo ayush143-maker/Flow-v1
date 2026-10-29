@@ -1,0 +1,126 @@
+import { after, before, test } from 'node:test';
+import assert from 'node:assert/strict';
+import { createServer } from 'vite';
+
+let server;
+let MERCHANTS;
+let ACCOUNTS;
+before(async () => {
+  server = await createServer({ configFile: 'vite.config.ts', server: { middlewareMode: true }, appType: 'custom' });
+  ({ MERCHANTS, ACCOUNTS } = await server.ssrLoadModule('/src/services/mock/merchants.ts'));
+});
+after(async () => { await server?.close(); });
+
+
+test("merchant catalogue contains named entries", () => {
+  assert.ok(MERCHANTS.length > 0);
+});
+
+test("merchant names are unique", () => {
+  const names = MERCHANTS.map((m) => m.name);
+  assert.equal(new Set(names).size, names.length);
+});
+
+test("merchant names are non-empty", () => {
+  assert.ok(MERCHANTS.every((m) => m.name.trim().length > 0));
+});
+
+test("merchant categories are non-empty", () => {
+  assert.ok(MERCHANTS.every((m) => m.category.trim().length > 0));
+});
+
+test("merchant minor-unit ranges are ordered", () => {
+  assert.ok(MERCHANTS.every((m) => m.minMinor <= m.maxMinor));
+});
+
+test("merchant values use non-negative minor units", () => {
+  assert.ok(MERCHANTS.every((m) => m.minMinor >= 0 && m.maxMinor >= 0));
+});
+
+test("merchant payment methods are populated", () => {
+  assert.ok(MERCHANTS.every((m) => ['upi','card','netbanking','atm','wallet','bank_transfer','cash','unknown'].includes(m.method)));
+});
+
+test("merchant icons are non-empty", () => {
+  assert.ok(MERCHANTS.every((m) => typeof m.icon === 'string' && m.icon.length > 0));
+});
+
+test("monthly occurrence rates are non-negative", () => {
+  assert.ok(MERCHANTS.every((m) => m.perMonth >= 0));
+});
+
+test("fixed recurring merchants specify a fixed amount", () => {
+  assert.ok(MERCHANTS.filter((m) => m.recurringDay !== undefined).every((m) => Number.isInteger(m.fixedMinor)));
+});
+
+test("fixed recurring merchants use a valid day of month", () => {
+  assert.ok(MERCHANTS.filter((m) => m.recurringDay !== undefined).every((m) => m.recurringDay >= 1 && m.recurringDay <= 31));
+});
+
+test("credit catalogue entries are explicitly flagged", () => {
+  assert.ok(MERCHANTS.filter((m) => m.name.includes('Credit') || m.name.includes('Refund') || m.name.includes('Cashback')).every((m) => m.credit === true));
+});
+
+test("savings account exposes a display hint", () => {
+  assert.ok(ACCOUNTS.savings.hint.length > 0);
+});
+
+test("card account exposes a display hint", () => {
+  assert.ok(ACCOUNTS.card.hint.length > 0);
+});
+
+test("both account specs identify a bank", () => {
+  assert.ok(ACCOUNTS.savings.bank && ACCOUNTS.card.bank);
+});
+
+test("both account specs identify an instrument", () => {
+  assert.ok(ACCOUNTS.savings.instrument && ACCOUNTS.card.instrument);
+});
+
+test("catalogue includes food merchants", () => {
+  assert.ok(MERCHANTS.some((m) => m.category === 'Food'));
+});
+
+test("catalogue includes recurring subscriptions", () => {
+  assert.ok(MERCHANTS.some((m) => m.category === 'Subscriptions' && m.recurringDay !== undefined));
+});
+
+test("catalogue includes credit examples", () => {
+  assert.ok(MERCHANTS.some((m) => m.credit === true));
+});
+
+test("catalogue has at least one non-credit debit", () => {
+  assert.ok(MERCHANTS.some((m) => !m.credit));
+});
+
+test("merchant amount bounds are integer paise", () => {
+  assert.ok(MERCHANTS.every((m) => Number.isInteger(m.minMinor) && Number.isInteger(m.maxMinor)));
+});
+
+test("fixed merchant amounts stay inside their declared bounds", () => {
+  assert.ok(MERCHANTS.filter((m) => m.fixedMinor !== undefined).every((m) => m.fixedMinor >= m.minMinor && m.fixedMinor <= m.maxMinor));
+});
+
+test("recurring merchant specs use zero random occurrence rate", () => {
+  assert.ok(MERCHANTS.filter((m) => m.recurringDay !== undefined).every((m) => m.perMonth === 0));
+});
+
+test("every credit entry has a usable amount range", () => {
+  assert.ok(MERCHANTS.filter((m) => m.credit).every((m) => m.maxMinor >= m.minMinor));
+});
+
+test("merchant names have no surrounding whitespace", () => {
+  assert.ok(MERCHANTS.every((m) => m.name === m.name.trim()));
+});
+
+test("merchant category names have no surrounding whitespace", () => {
+  assert.ok(MERCHANTS.every((m) => m.category === m.category.trim()));
+});
+
+test("catalogue has more than ten distinct categories", () => {
+  assert.ok(new Set(MERCHANTS.map((m) => m.category)).size > 10);
+});
+
+test("both account instruments are non-empty strings", () => {
+  assert.ok([ACCOUNTS.savings.instrument, ACCOUNTS.card.instrument].every((v) => typeof v === 'string' && v.length > 0));
+});
