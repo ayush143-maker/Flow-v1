@@ -247,3 +247,7 @@ test("month label does not include a day number", () => {
 test("start of day clears milliseconds", () => {
   assert.equal(format.startOfDay(new Date(2024, 0, 1, 8, 9, 10, 555)).getMilliseconds(), 0);
 });
+
+test("start of day clears minutes", () => {
+  assert.equal(format.startOfDay(new Date(2024, 0, 1, 8, 9, 10)).getMinutes(), 0);
+});
