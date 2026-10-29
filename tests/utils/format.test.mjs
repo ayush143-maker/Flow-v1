@@ -231,3 +231,7 @@ test("preserves numeric merchant characters", () => {
 test("compact formatter uses k suffix for one thousand rupees", () => {
   assert.equal(format.formatMoneyCompact(100000), '₹1.0k');
 });
+
+test("compact formatter uses lakh suffix at one lakh rupees", () => {
+  assert.equal(format.formatMoneyCompact(10000000), '₹1.0L');
+});
