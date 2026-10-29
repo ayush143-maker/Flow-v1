@@ -155,3 +155,7 @@ test("creates IDs with the requested prefix", () => {
 test("creates non-empty IDs without a prefix", () => {
   assert.ok(format.newId().length > 0);
 });
+
+test("creates distinct IDs for separate calls", () => {
+  assert.notEqual(format.newId('x'), format.newId('x'));
+});
