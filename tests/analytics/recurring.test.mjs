@@ -105,3 +105,8 @@ test("accepts a monthly interval near thirty days", () => {
 test("does not mark an exact thirty-day two-point interval as certain", () => {
   assert.equal(recurring.detectRecurring([tx(1), tx(31)])[0].isEstimate, true);
 });
+
+test("accepts a consistent amount difference below the variance threshold", () => {
+  const rows = [tx(1, { amountMinor: 10000 }), tx(31, { amountMinor: 12500 })];
+  assert.equal(recurring.detectRecurring(rows).length, 1);
+});
