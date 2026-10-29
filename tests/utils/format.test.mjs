@@ -227,3 +227,7 @@ test("does not treat punctuation as merchant identity", () => {
 test("preserves numeric merchant characters", () => {
   assert.equal(format.normalizeMerchant('Store 123'), 'STORE 123');
 });
+
+test("compact formatter uses k suffix for one thousand rupees", () => {
+  assert.equal(format.formatMoneyCompact(100000), '₹1.0k');
+});
