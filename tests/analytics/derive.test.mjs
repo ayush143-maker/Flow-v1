@@ -146,3 +146,8 @@ test("period statistics compute rounded daily average", () => {
 test("category breakdown returns an empty list for no transactions", () => {
   assert.deepEqual(analytics.categoryBreakdown([]), []);
 });
+
+test("top merchants uses five as the default limit", () => {
+  const rows = Array.from({ length: 7 }, (_, i) => tx({ id: String(i), merchantNormalized: 'M' + i, amountMinor: 100 + i }));
+  assert.equal(analytics.topMerchants(rows).length, 5);
+});
