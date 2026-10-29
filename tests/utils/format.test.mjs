@@ -171,3 +171,7 @@ test("includes the year for a date from an older year", () => {
 test("omits the year for a date in the current year", () => {
   assert.equal(format.dateShort(new Date(2024, 0, 2), new Date(2024, 5, 1)), '2 Jan');
 });
+
+test("formats time labels as readable text", () => {
+  assert.match(format.timeLabel(new Date(2024,0,1,13,5).toISOString()), /\d/);
+});
