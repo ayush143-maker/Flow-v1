@@ -134,3 +134,7 @@ test("ordinary mock history carries transaction references", () => {
 test("ordinary mock hashes use the expected FNV hex format", () => {
   assert.ok(mock.generateMockTransactions(25, 20251031).every((t) => /^[0-9a-f]{8}$/.test(t.messageHash)));
 });
+
+test("test data exposes all mandatory transaction fields", () => {
+  assert.ok(mock.generateTestTransactions(20).every((t) => t.id && t.currency && t.merchant && t.category && t.transactionDate && t.createdAt && t.messageHash));
+});
