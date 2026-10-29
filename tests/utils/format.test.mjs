@@ -211,3 +211,7 @@ test("computes a twenty-five-percent increase", () => {
 test("computes a twenty-five-percent decrease", () => {
   assert.equal(format.percentChange(75, 100), -25);
 });
+
+test("normalizes tabs as merchant whitespace", () => {
+  assert.equal(format.normalizeMerchant('Alpha\tBeta'), 'ALPHA BETA');
+});
