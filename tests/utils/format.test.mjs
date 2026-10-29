@@ -251,3 +251,7 @@ test("start of day clears milliseconds", () => {
 test("start of day clears minutes", () => {
   assert.equal(format.startOfDay(new Date(2024, 0, 1, 8, 9, 10)).getMinutes(), 0);
 });
+
+test("add days supports a negative offset", () => {
+  assert.equal(format.addDays(new Date(2024, 0, 10), -3).getDate(), 7);
+});
