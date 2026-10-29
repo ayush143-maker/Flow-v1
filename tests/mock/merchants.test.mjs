@@ -61,3 +61,7 @@ test("both account specs identify a bank", () => {
 test("both account specs identify an instrument", () => {
   assert.ok(ACCOUNTS.savings.instrument && ACCOUNTS.card.instrument);
 });
+
+test("catalogue includes food merchants", () => {
+  assert.ok(MERCHANTS.some((m) => m.category === 'Food'));
+});
