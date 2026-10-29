@@ -219,3 +219,8 @@ test("yearly trend includes a debit in the current month bucket", () => {
   const values = analytics.buckets([tx({ transactionDate: day.toISOString(), amountMinor: 444 })], 'yearly', day);
   assert.equal(values[11].value, 444);
 });
+
+test("positive category shares add up to one", () => {
+  const slices = analytics.categoryBreakdown([tx({ amountMinor: 300, category: 'Food' }), tx({ id: 'b', amountMinor: 700, category: 'Travel' })]);
+  assert.equal(slices.reduce((sum, x) => sum + x.share, 0), 1);
+});
