@@ -85,3 +85,8 @@ test("applies a learned category rule to generated test data", () => {
   const rows = mock.generateTestTransactions(100, rules);
   assert.ok(rows.some((t) => t.merchantNormalized === 'SWIGGY' && t.category === 'Custom food'));
 });
+
+test("keeps payment methods within the supported union", () => {
+  const supported = new Set(['upi','card','netbanking','atm','wallet','bank_transfer','cash','unknown']);
+  assert.ok(mock.generateTestTransactions(30).every((t) => supported.has(t.paymentMethod)));
+});
