@@ -165,3 +165,8 @@ test("daily totals ignores records after the selected end day", () => {
   const later = tx({ transactionDate: new Date(2024,0,5,12).toISOString(), amountMinor: 900 });
   assert.deepEqual(analytics.dailyTotals([later], 3, new Date(2024,0,3,20)), [0, 0, 0]);
 });
+
+test("monthly periods use a thirty-day window", () => {
+  const p = analytics.periodFor('monthly', new Date(2024, 0, 10, 15));
+  assert.equal(Math.round((p.to - p.from) / 86400000), 30);
+});
