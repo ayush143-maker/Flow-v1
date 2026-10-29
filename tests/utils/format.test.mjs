@@ -239,3 +239,7 @@ test("compact formatter uses lakh suffix at one lakh rupees", () => {
 test("compact formatter uses crore suffix at one crore rupees", () => {
   assert.equal(format.formatMoneyCompact(1000000000), '₹1.0Cr');
 });
+
+test("month label does not include a day number", () => {
+  assert.equal(format.monthLabel(new Date(2024, 0, 29)), 'January');
+});
