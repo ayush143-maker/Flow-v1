@@ -195,3 +195,7 @@ test("formats zero rupees without a decimal suffix", () => {
 test("formats paise below one rupee with two decimals", () => {
   assert.equal(format.formatMoney(75), '₹0.75');
 });
+
+test("compact formatter rounds sub-thousand rupees", () => {
+  assert.equal(format.formatMoneyCompact(99900), '₹999');
+});
