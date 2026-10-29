@@ -71,3 +71,7 @@ test("keeps transaction references non-empty in test messages", () => {
 test("sets creation time equal to transaction time in mock records", () => {
   assert.ok(mock.generateTestTransactions(12).every((t) => t.createdAt === t.transactionDate));
 });
+
+test("honors a zero test transaction count", () => {
+  assert.deepEqual(mock.generateTestTransactions(0), []);
+});
