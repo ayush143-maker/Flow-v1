@@ -146,3 +146,8 @@ test("test data contains only debit or credit transaction types", () => {
 test("test data keeps normalized merchant keys non-empty", () => {
   assert.ok(mock.generateTestTransactions(50).every((t) => t.merchantNormalized.length > 0));
 });
+
+test("test data does not repeat transaction identifiers", () => {
+  const rows = mock.generateTestTransactions(50);
+  assert.equal(new Set(rows.map((t) => t.id)).size, rows.length);
+});
