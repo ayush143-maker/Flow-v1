@@ -34,3 +34,7 @@ test("generates unique IDs for a generated batch", () => {
 test("stores amounts in integer paise", () => {
   assert.ok(mock.generateTestTransactions(20).every((t) => Number.isInteger(t.amountMinor)));
 });
+
+test("keeps generated test amounts non-negative", () => {
+  assert.ok(mock.generateTestTransactions(20).every((t) => t.amountMinor >= 0));
+});
