@@ -50,3 +50,7 @@ test("adds source messages to generated test transactions", () => {
 test("generates a message hash for test transactions", () => {
   assert.ok(mock.generateTestTransactions(10).every((t) => typeof t.messageHash === 'string' && t.messageHash.length > 0));
 });
+
+test("generates parseable timestamps for test transactions", () => {
+  assert.ok(mock.generateTestTransactions(10).every((t) => Number.isFinite(Date.parse(t.transactionDate)) && Number.isFinite(Date.parse(t.createdAt))));
+});
