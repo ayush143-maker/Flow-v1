@@ -151,3 +151,7 @@ test("preserves date arithmetic over year boundaries", () => {
 test("creates IDs with the requested prefix", () => {
   assert.match(format.newId('txn'), /^txn_/);
 });
+
+test("creates non-empty IDs without a prefix", () => {
+  assert.ok(format.newId().length > 0);
+});
