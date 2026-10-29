@@ -244,3 +244,7 @@ test("period statistics return the requested whole-day span", () => {
   const p = analytics.periodStats([], new Date(2024,0,1), new Date(2024,0,8));
   assert.equal(p.days, 7);
 });
+
+test("an empty weekly trend contains only zero totals", () => {
+  assert.deepEqual(analytics.buckets([], 'weekly', new Date(2024,0,10)).map((x) => x.value), [0,0,0,0,0,0,0]);
+});
