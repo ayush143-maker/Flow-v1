@@ -283,3 +283,7 @@ test("merchant normalization trims whitespace", () => {
 test("date short returns a non-empty result", () => {
   assert.ok(format.dateShort(new Date(2024, 0, 2), new Date(2024, 5, 1)).length > 0);
 });
+
+test("time label contains minutes", () => {
+  assert.match(format.timeLabel(new Date(2024, 0, 1, 9, 7).toISOString()), /07/);
+});
