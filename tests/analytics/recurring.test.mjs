@@ -76,3 +76,9 @@ test("converts quarterly payments to a monthly equivalent", () => {
 test("converts yearly payments to a monthly equivalent", () => {
   assert.equal(recurring.monthlyEquivalentMinor({ frequency: 'yearly', amountMinor: 120000 }), 10000);
 });
+
+test("sorts recurring payments by monthly equivalent descending", () => {
+  const rows = [tx(1, { merchantNormalized: 'LOW', amountMinor: 3000 }), tx(1, { id: 'high1', merchantNormalized: 'HIGH', amountMinor: 9000 }), tx(31, { id: 'high2', merchantNormalized: 'HIGH', amountMinor: 9000 })];
+  const found = recurring.detectRecurring(rows);
+  assert.equal(found[0].merchantNormalized, 'HIGH');
+});
