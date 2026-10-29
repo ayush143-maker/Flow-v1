@@ -34,3 +34,7 @@ test("handles Unicode input", async () => {
 test("handles long inputs", async () => {
   assert.match(await sha('flow'.repeat(10000)), /^(?:[0-9a-f]{64}|fnv\$[0-9a-f]{8})$/);
 });
+
+test("does not return the original input", async () => {
+  assert.notEqual(await sha('private message'), 'private message');
+});
