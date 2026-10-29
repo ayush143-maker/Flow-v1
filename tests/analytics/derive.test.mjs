@@ -137,3 +137,8 @@ test("range excludes a transaction before the start", () => {
 test("range selects no transactions from an empty input", () => {
   assert.deepEqual(analytics.inRange([], new Date(2024,0,1), new Date(2024,0,2)), []);
 });
+
+test("period statistics compute rounded daily average", () => {
+  const p = analytics.periodStats([tx({ amountMinor: 100 })], new Date(2024,0,1), new Date(2024,0,4));
+  assert.equal(p.avgDailyMinor, 33);
+});
