@@ -61,3 +61,7 @@ test('percentage change handles a complete decrease to zero', () => {
 test("formats compact values below one thousand rupees", () => {
   assert.equal(format.formatMoneyCompact(12345), '₹123');
 });
+
+test("uses the night greeting before five", () => {
+  assert.equal(format.greeting(new Date(2024, 0, 1, 4)), 'Good night');
+});
