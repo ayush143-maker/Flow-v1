@@ -100,3 +100,8 @@ test("starts a day at local midnight", () => {
   assert.equal(d.getMinutes(), 0);
   assert.equal(d.getSeconds(), 0);
 });
+
+test("adds days across a month boundary", () => {
+  assert.equal(format.addDays(new Date(2024, 0, 31), 1).getDate(), 1);
+  assert.equal(format.addDays(new Date(2024, 0, 31), 1).getMonth(), 1);
+});
