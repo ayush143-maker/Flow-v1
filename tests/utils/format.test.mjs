@@ -93,3 +93,10 @@ test("produces the known FNV-1a hash for hello", () => {
 test("produces the FNV-1a offset basis hash for an empty string", () => {
   assert.equal(format.fnv1a(''), '811c9dc5');
 });
+
+test("starts a day at local midnight", () => {
+  const d = format.startOfDay(new Date(2024, 3, 12, 16, 35, 22));
+  assert.equal(d.getHours(), 0);
+  assert.equal(d.getMinutes(), 0);
+  assert.equal(d.getSeconds(), 0);
+});
