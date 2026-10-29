@@ -183,3 +183,7 @@ test("combines date and time in the full date helper", () => {
 test("handles a non-leap thirty-day month", () => {
   assert.equal(format.daysInMonth(new Date(2024, 3, 20)), 30);
 });
+
+test("handles a thirty-one-day month", () => {
+  assert.equal(format.daysInMonth(new Date(2024, 0, 20)), 31);
+});
