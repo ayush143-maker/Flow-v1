@@ -91,3 +91,8 @@ test("does not invent a food merchant insight for travel expenses", () => {
   const rows = [tx(5, 1, { category: 'Travel', amountMinor: 25000 })];
   assert.equal(generateInsights(rows, new Date(2024, 1, 15)).some((x) => x.id === 'food-top'), false);
 });
+
+test("does not create cash insight for other categories", () => {
+  const rows = [tx(5, 1, { category: 'Bills', amountMinor: 20000 })];
+  assert.equal(generateInsights(rows, new Date(2024, 1, 15)).some((x) => x.id === 'cash'), false);
+});
