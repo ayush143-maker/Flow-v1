@@ -126,3 +126,7 @@ test("different seeds vary ordinary mock transaction fields", () => {
 test("ordinary mock history carries normalized merchant keys", () => {
   assert.ok(mock.generateMockTransactions(25, 20251031).every((t) => typeof t.merchantNormalized === 'string' && t.merchantNormalized.length > 0));
 });
+
+test("ordinary mock history carries transaction references", () => {
+  assert.ok(mock.generateMockTransactions(25, 20251031).every((t) => typeof t.referenceId === 'string' && t.referenceId.length > 0));
+});
