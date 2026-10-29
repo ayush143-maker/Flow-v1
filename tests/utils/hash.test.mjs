@@ -42,3 +42,7 @@ test("does not return the original input", async () => {
 test("returns a promise for asynchronous callers", async () => {
   assert.equal(typeof sha('x').then, 'function');
 });
+
+test("is stable across repeated empty inputs", async () => {
+  assert.equal(await sha(''), await sha(''));
+});
