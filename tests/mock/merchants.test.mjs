@@ -77,3 +77,7 @@ test("catalogue includes credit examples", () => {
 test("catalogue has at least one non-credit debit", () => {
   assert.ok(MERCHANTS.some((m) => !m.credit));
 });
+
+test("merchant amount bounds are integer paise", () => {
+  assert.ok(MERCHANTS.every((m) => Number.isInteger(m.minMinor) && Number.isInteger(m.maxMinor)));
+});
