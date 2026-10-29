@@ -97,3 +97,7 @@ test("returns an ISO timestamp for the next expected date", () => {
   const next = recurring.detectRecurring([tx(1), tx(31)])[0].nextExpected;
   assert.ok(Number.isFinite(Date.parse(next)));
 });
+
+test("accepts a monthly interval near thirty days", () => {
+  assert.equal(recurring.detectRecurring([tx(1), tx(30)])[0].frequency, 'monthly');
+});
