@@ -22,3 +22,7 @@ test('SHA-256 helper distinguishes different inputs', async () => {
 test('SHA-256 output contains no uppercase hex characters', async () => {
   assert.equal((await sha('case check')).replace(/[0-9a-f]/g, '').length, 0);
 });
+
+test("preserves an empty-string hash result as a valid fingerprint", async () => {
+  assert.match(await sha(''), /^(?:[0-9a-f]{64}|fnv\$[0-9a-f]{8})$/);
+});
