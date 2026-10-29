@@ -45,3 +45,7 @@ test("fixed recurring merchants use a valid day of month", () => {
 test("credit catalogue entries are explicitly flagged", () => {
   assert.ok(MERCHANTS.filter((m) => m.name.includes('Credit') || m.name.includes('Refund') || m.name.includes('Cashback')).every((m) => m.credit === true));
 });
+
+test("savings account exposes a display hint", () => {
+  assert.ok(ACCOUNTS.savings.hint.length > 0);
+});
