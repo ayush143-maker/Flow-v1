@@ -90,3 +90,8 @@ test("keeps payment methods within the supported union", () => {
   const supported = new Set(['upi','card','netbanking','atm','wallet','bank_transfer','cash','unknown']);
   assert.ok(mock.generateTestTransactions(30).every((t) => supported.has(t.paymentMethod)));
 });
+
+test("marks generated mock history as non-test records", () => {
+  const rows = mock.generateMockTransactions(5, 20251031);
+  assert.ok(rows.every((t) => t.isTestData === false));
+});
