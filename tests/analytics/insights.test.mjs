@@ -106,3 +106,9 @@ test("does not add a food insight for credit-only food records", () => {
   const rows = [tx(5, 1, { type: 'credit', category: 'Food', merchant: 'Cafe' })];
   assert.equal(generateInsights(rows, new Date(2024, 1, 15)).some((x) => x.id === 'food-top'), false);
 });
+
+test("largest spend picks the highest debit", () => {
+  const rows = [tx(5, 1, { amountMinor: 1000 }), tx(6, 1, { amountMinor: 9000, merchant: 'Big Store' })];
+  const item = generateInsights(rows, new Date(2024, 1, 15)).find((x) => x.id === 'largest');
+  assert.ok(item.title.includes('Big Store'));
+});
