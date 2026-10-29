@@ -81,3 +81,8 @@ test("does not report subscriptions when no subscription debit exists", () => {
   const rows = [tx(5, 1, { category: 'Food' })];
   assert.equal(generateInsights(rows, new Date(2024, 1, 15)).some((x) => x.id === 'subs'), false);
 });
+
+test("uses the same month-to-date cutoff for insight comparisons", () => {
+  const rows = [tx(20, 1, { category: 'Food', amountMinor: 100000 }), tx(5, 0, { category: 'Food', amountMinor: 50000 })];
+  assert.equal(generateInsights(rows, new Date(2024, 1, 15)).some((x) => x.id === 'largest' && x.title.includes('₹1,000')), false);
+});
