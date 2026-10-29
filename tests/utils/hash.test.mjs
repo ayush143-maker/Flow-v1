@@ -38,3 +38,7 @@ test("handles long inputs", async () => {
 test("does not return the original input", async () => {
   assert.notEqual(await sha('private message'), 'private message');
 });
+
+test("returns a promise for asynchronous callers", async () => {
+  assert.equal(typeof sha('x').then, 'function');
+});
