@@ -75,3 +75,7 @@ test("sets creation time equal to transaction time in mock records", () => {
 test("honors a zero test transaction count", () => {
   assert.deepEqual(mock.generateTestTransactions(0), []);
 });
+
+test("honors a single test transaction request", () => {
+  assert.equal(mock.generateTestTransactions(1).length, 1);
+});
