@@ -151,3 +151,8 @@ test("test data does not repeat transaction identifiers", () => {
   const rows = mock.generateTestTransactions(50);
   assert.equal(new Set(rows.map((t) => t.id)).size, rows.length);
 });
+
+test("ordinary history is sorted in descending transaction-time order", () => {
+  const rows = mock.generateMockTransactions(45, 20251031);
+  assert.deepEqual(rows.map((t) => t.transactionDate), [...rows].map((t) => t.transactionDate).sort((a,b) => b.localeCompare(a)));
+});
