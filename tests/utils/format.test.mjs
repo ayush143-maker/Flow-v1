@@ -163,3 +163,7 @@ test("creates distinct IDs for separate calls", () => {
 test("formats day and month consistently", () => {
   assert.equal(format.dayMonth(new Date(2024, 0, 2).toISOString()), '2 Jan');
 });
+
+test("includes the year for a date from an older year", () => {
+  assert.equal(format.dateShort(new Date(2023, 0, 2), new Date(2024, 5, 1)), '2 Jan 2023');
+});
