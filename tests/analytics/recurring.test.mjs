@@ -136,3 +136,7 @@ test("accepts a ten-day spread between monthly intervals", () => {
   assert.equal(found.length, 1);
   assert.equal(found[0].frequency, 'monthly');
 });
+
+test("allows an amount ratio at the stated 1.3 cutoff", () => {
+  assert.equal(recurring.detectRecurring([tx(1, { amountMinor: 10000 }), tx(31, { amountMinor: 13000 })]).length, 1);
+});
