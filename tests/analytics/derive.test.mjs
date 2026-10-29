@@ -175,3 +175,8 @@ test("yearly periods use a 365-day window", () => {
   const p = analytics.periodFor('yearly', new Date(2024, 0, 10, 15));
   assert.equal(Math.round((p.to - p.from) / 86400000), 365);
 });
+
+test("monthly previous range ends where the current range begins", () => {
+  const p = analytics.periodFor('monthly', new Date(2024, 5, 18));
+  assert.equal(p.prevTo.getTime(), p.from.getTime());
+});
