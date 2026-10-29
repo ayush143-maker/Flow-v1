@@ -37,3 +37,7 @@ test("monthly occurrence rates are non-negative", () => {
 test("fixed recurring merchants specify a fixed amount", () => {
   assert.ok(MERCHANTS.filter((m) => m.recurringDay !== undefined).every((m) => Number.isInteger(m.fixedMinor)));
 });
+
+test("fixed recurring merchants use a valid day of month", () => {
+  assert.ok(MERCHANTS.filter((m) => m.recurringDay !== undefined).every((m) => m.recurringDay >= 1 && m.recurringDay <= 31));
+});
