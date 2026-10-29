@@ -119,3 +119,9 @@ test("largest spend ignores a higher credit amount", () => {
   assert.ok(item.title.includes('₹20'));
   assert.equal(item.title.includes('Salary'), false);
 });
+
+test("food insight reports singular order grammar", () => {
+  const rows = [tx(5, 1, { category: 'Food', amountMinor: 12000, merchant: 'Cafe Solo', merchantNormalized: 'CAFE SOLO' })];
+  const item = generateInsights(rows, new Date(2024, 1, 15)).find((x) => x.id === 'food-top');
+  assert.ok(item.detail.includes('1 order'));
+});
