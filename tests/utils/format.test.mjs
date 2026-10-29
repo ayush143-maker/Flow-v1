@@ -57,3 +57,7 @@ test('percentage change returns null when the previous value is negative', () =>
 test('percentage change handles a complete decrease to zero', () => {
   assert.equal(format.percentChange(0, 100), -100);
 });
+
+test("formats compact values below one thousand rupees", () => {
+  assert.equal(format.formatMoneyCompact(12345), '₹123');
+});
