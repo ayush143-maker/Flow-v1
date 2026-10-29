@@ -53,3 +53,7 @@ test("savings account exposes a display hint", () => {
 test("card account exposes a display hint", () => {
   assert.ok(ACCOUNTS.card.hint.length > 0);
 });
+
+test("both account specs identify a bank", () => {
+  assert.ok(ACCOUNTS.savings.bank && ACCOUNTS.card.bank);
+});
