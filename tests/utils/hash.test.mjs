@@ -26,3 +26,7 @@ test('SHA-256 output contains no uppercase hex characters', async () => {
 test("preserves an empty-string hash result as a valid fingerprint", async () => {
   assert.match(await sha(''), /^(?:[0-9a-f]{64}|fnv\$[0-9a-f]{8})$/);
 });
+
+test("handles Unicode input", async () => {
+  assert.match(await sha('₹ café 🎵'), /^(?:[0-9a-f]{64}|fnv\$[0-9a-f]{8})$/);
+});
