@@ -118,3 +118,9 @@ test("rejects an interval shorter than the weekly minimum", () => {
 test("rejects an interval between weekly and monthly bands", () => {
   assert.deepEqual(recurring.detectRecurring([tx(1), tx(11)]), []);
 });
+
+test("recognizes a quarterly interval around ninety days", () => {
+  const found = recurring.detectRecurring([tx(1), tx(91)]);
+  assert.equal(found.length, 1);
+  assert.equal(found[0].frequency, 'quarterly');
+});
