@@ -72,3 +72,7 @@ test("converts weekly payments to a monthly equivalent", () => {
 test("converts quarterly payments to a monthly equivalent", () => {
   assert.equal(recurring.monthlyEquivalentMinor({ frequency: 'quarterly', amountMinor: 30000 }), 10000);
 });
+
+test("converts yearly payments to a monthly equivalent", () => {
+  assert.equal(recurring.monthlyEquivalentMinor({ frequency: 'yearly', amountMinor: 120000 }), 10000);
+});
