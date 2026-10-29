@@ -267,3 +267,7 @@ test("percent change rounds fractional percentages", () => {
 test("percent change handles a large increase", () => {
   assert.equal(format.percentChange(2000, 100), 1900);
 });
+
+test("percent change handles identical values", () => {
+  assert.equal(format.percentChange(100, 100), 0);
+});
