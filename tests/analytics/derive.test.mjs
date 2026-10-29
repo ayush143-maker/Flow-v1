@@ -199,3 +199,11 @@ test("January month-to-date ends at the next local midnight", () => {
   assert.equal(p.to.getDate(), 16);
   assert.equal(p.to.getHours(), 0);
 });
+
+test("weekly trend places a current-day debit in its last bucket", () => {
+  const day = new Date(2024, 0, 10, 12);
+  const rows = [tx({ transactionDate: day.toISOString(), amountMinor: 777 })];
+  const values = analytics.buckets(rows, 'weekly', day).map((x) => x.value);
+  assert.equal(values.length, 7);
+  assert.equal(values[6], 777);
+});
