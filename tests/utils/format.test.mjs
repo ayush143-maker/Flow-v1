@@ -125,3 +125,9 @@ test("labels a transaction on the current local date as today", () => {
   const sameDay = new Date(2024, 0, 2, 8).toISOString();
   assert.equal(format.dayLabel(sameDay, now), 'Today');
 });
+
+test("labels the preceding local date as yesterday", () => {
+  const now = new Date(2024, 0, 2, 18);
+  const priorDay = new Date(2024, 0, 1, 8).toISOString();
+  assert.equal(format.dayLabel(priorDay, now), 'Yesterday');
+});
