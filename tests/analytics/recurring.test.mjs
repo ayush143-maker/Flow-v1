@@ -144,3 +144,8 @@ test("allows an amount ratio at the stated 1.3 cutoff", () => {
 test("rejects an amount ratio just above the 1.3 cutoff", () => {
   assert.equal(recurring.detectRecurring([tx(1, { amountMinor: 10000 }), tx(31, { amountMinor: 13100 })]).length, 0);
 });
+
+test("rounds the median for an even number of occurrences", () => {
+  const found = recurring.detectRecurring([tx(1, { amountMinor: 10000 }), tx(31, { amountMinor: 11001 })]);
+  assert.equal(found[0].amountMinor, 10501);
+});
