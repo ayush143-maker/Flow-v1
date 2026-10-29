@@ -125,3 +125,8 @@ test("food insight reports singular order grammar", () => {
   const item = generateInsights(rows, new Date(2024, 1, 15)).find((x) => x.id === 'food-top');
   assert.ok(item.detail.includes('1 order'));
 });
+
+test("cash insight reports singular withdrawal grammar", () => {
+  const item = generateInsights([tx(5, 1, { category: 'Cash', amountMinor: 20000 })], new Date(2024, 1, 15)).find((x) => x.id === 'cash');
+  assert.ok(item.detail.includes('1 ATM withdrawal'));
+});
