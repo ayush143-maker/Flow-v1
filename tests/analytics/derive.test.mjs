@@ -239,3 +239,8 @@ test("category slices retain the correct transaction count", () => {
   const slices = analytics.categoryBreakdown([tx({ amountMinor: 10 }), tx({ id: 'b', amountMinor: 20 }), tx({ id: 'c', amountMinor: 30, category: 'Bills' })]);
   assert.equal(slices.find((x) => x.category === 'Food').count, 2);
 });
+
+test("period statistics return the requested whole-day span", () => {
+  const p = analytics.periodStats([], new Date(2024,0,1), new Date(2024,0,8));
+  assert.equal(p.days, 7);
+});
