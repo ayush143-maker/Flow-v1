@@ -77,3 +77,7 @@ test("uses the afternoon greeting from noon", () => {
 test("uses the evening greeting from five", () => {
   assert.equal(format.greeting(new Date(2024, 0, 1, 17)), 'Good evening');
 });
+
+test("normalizes merchant case punctuation and whitespace", () => {
+  assert.equal(format.normalizeMerchant('  m&m   Store! '), 'MM Store');
+});
