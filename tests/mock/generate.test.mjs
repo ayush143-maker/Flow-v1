@@ -95,3 +95,8 @@ test("marks generated mock history as non-test records", () => {
   const rows = mock.generateMockTransactions(5, 20251031);
   assert.ok(rows.every((t) => t.isTestData === false));
 });
+
+test("keeps normal mock history source values valid", () => {
+  const rows = mock.generateMockTransactions(5, 20251031);
+  assert.ok(rows.every((t) => ['sms','notification'].includes(t.source)));
+});
