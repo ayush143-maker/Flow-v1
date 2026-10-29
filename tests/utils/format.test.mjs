@@ -159,3 +159,7 @@ test("creates non-empty IDs without a prefix", () => {
 test("creates distinct IDs for separate calls", () => {
   assert.notEqual(format.newId('x'), format.newId('x'));
 });
+
+test("formats day and month consistently", () => {
+  assert.equal(format.dayMonth(new Date(2024, 0, 2).toISOString()), '2 Jan');
+});
