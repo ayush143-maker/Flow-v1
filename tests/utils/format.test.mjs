@@ -81,3 +81,7 @@ test("uses the evening greeting from five", () => {
 test("normalizes merchant case punctuation and whitespace", () => {
   assert.equal(format.normalizeMerchant('  m&m   Store! '), 'MM Store');
 });
+
+test("returns an empty normalized key for empty merchant text", () => {
+  assert.equal(format.normalizeMerchant('   '), '');
+});
