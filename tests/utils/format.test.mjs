@@ -219,3 +219,7 @@ test("normalizes tabs as merchant whitespace", () => {
 test("normalizes newlines as merchant whitespace", () => {
   assert.equal(format.normalizeMerchant('Alpha\nBeta'), 'ALPHA BETA');
 });
+
+test("does not treat punctuation as merchant identity", () => {
+  assert.equal(format.normalizeMerchant('A-B'), format.normalizeMerchant('AB'));
+});
