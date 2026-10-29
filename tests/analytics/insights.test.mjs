@@ -101,3 +101,8 @@ test("ignores previous-month credits in the category comparison", () => {
   const rows = [tx(5, 1, { category: 'Food', amountMinor: 100000 }), tx(5, 0, { type: 'credit', category: 'Food', amountMinor: 200000 })];
   assert.equal(generateInsights(rows, new Date(2024, 1, 15)).some((x) => x.id === 'cat-up'), false);
 });
+
+test("does not add a food insight for credit-only food records", () => {
+  const rows = [tx(5, 1, { type: 'credit', category: 'Food', merchant: 'Cafe' })];
+  assert.equal(generateInsights(rows, new Date(2024, 1, 15)).some((x) => x.id === 'food-top'), false);
+});
