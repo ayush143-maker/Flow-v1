@@ -199,3 +199,7 @@ test("formats paise below one rupee with two decimals", () => {
 test("compact formatter rounds sub-thousand rupees", () => {
   assert.equal(format.formatMoneyCompact(99900), '₹999');
 });
+
+test("reports no percentage change when previous amount is zero", () => {
+  assert.equal(format.percentChange(0, 0), null);
+});
