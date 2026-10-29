@@ -143,3 +143,7 @@ test("normalizes repeated spaces in merchant names", () => {
 test("normalizes punctuation-only merchant names to an empty key", () => {
   assert.equal(format.normalizeMerchant('!@#$%'), '');
 });
+
+test("preserves date arithmetic over year boundaries", () => {
+  assert.equal(format.addDays(new Date(2023, 11, 31), 1).getFullYear(), 2024);
+});
