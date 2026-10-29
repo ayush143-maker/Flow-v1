@@ -287,3 +287,7 @@ test("date short returns a non-empty result", () => {
 test("time label contains minutes", () => {
   assert.match(format.timeLabel(new Date(2024, 0, 1, 9, 7).toISOString()), /07/);
 });
+
+test("full date includes a four-digit year", () => {
+  assert.match(format.fullDate(new Date(2024, 0, 1, 9, 7).toISOString()), /2024/);
+});
