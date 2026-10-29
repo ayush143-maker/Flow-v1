@@ -104,3 +104,7 @@ test("fixed merchant amounts stay inside their declared bounds", () => {
 test("recurring merchant specs use zero random occurrence rate", () => {
   assert.ok(MERCHANTS.filter((m) => m.recurringDay !== undefined).every((m) => m.perMonth === 0));
 });
+
+test("every credit entry has a usable amount range", () => {
+  assert.ok(MERCHANTS.filter((m) => m.credit).every((m) => m.maxMinor >= m.minMinor));
+});
