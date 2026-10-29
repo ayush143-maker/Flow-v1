@@ -65,3 +65,7 @@ test("both account specs identify an instrument", () => {
 test("catalogue includes food merchants", () => {
   assert.ok(MERCHANTS.some((m) => m.category === 'Food'));
 });
+
+test("catalogue includes recurring subscriptions", () => {
+  assert.ok(MERCHANTS.some((m) => m.category === 'Subscriptions' && m.recurringDay !== undefined));
+});
