@@ -65,3 +65,7 @@ test("formats compact values below one thousand rupees", () => {
 test("uses the night greeting before five", () => {
   assert.equal(format.greeting(new Date(2024, 0, 1, 4)), 'Good night');
 });
+
+test("uses the morning greeting from five", () => {
+  assert.equal(format.greeting(new Date(2024, 0, 1, 5)), 'Good morning');
+});
