@@ -85,3 +85,7 @@ test("normalizes merchant case punctuation and whitespace", () => {
 test("returns an empty normalized key for empty merchant text", () => {
   assert.equal(format.normalizeMerchant('   '), '');
 });
+
+test("produces the known FNV-1a hash for hello", () => {
+  assert.equal(format.fnv1a('hello'), '4f9f2cab');
+});
