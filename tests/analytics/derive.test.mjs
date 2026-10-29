@@ -224,3 +224,7 @@ test("positive category shares add up to one", () => {
   const slices = analytics.categoryBreakdown([tx({ amountMinor: 300, category: 'Food' }), tx({ id: 'b', amountMinor: 700, category: 'Travel' })]);
   assert.equal(slices.reduce((sum, x) => sum + x.share, 0), 1);
 });
+
+test("category breakdown is empty when there are only credits", () => {
+  assert.deepEqual(analytics.categoryBreakdown([tx({ type: 'credit', category: 'Salary' })]), []);
+});
