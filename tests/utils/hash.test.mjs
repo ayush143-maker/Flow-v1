@@ -30,3 +30,7 @@ test("preserves an empty-string hash result as a valid fingerprint", async () =>
 test("handles Unicode input", async () => {
   assert.match(await sha('₹ café 🎵'), /^(?:[0-9a-f]{64}|fnv\$[0-9a-f]{8})$/);
 });
+
+test("handles long inputs", async () => {
+  assert.match(await sha('flow'.repeat(10000)), /^(?:[0-9a-f]{64}|fnv\$[0-9a-f]{8})$/);
+});
