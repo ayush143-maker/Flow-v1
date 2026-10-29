@@ -296,3 +296,7 @@ test("day label falls back to a date for older entries", () => {
   const label = format.dayLabel(new Date(2023,0,1).toISOString(), new Date(2024,0,10));
   assert.ok(label.length > 0 && label !== 'Today' && label !== 'Yesterday');
 });
+
+test("formatting preserves INR currency notation", () => {
+  assert.match(format.formatMoney(12345), /₹/);
+});
