@@ -106,3 +106,9 @@ test("uses a repeatable seeded sequence for mock history fields", () => {
   const b = mock.generateMockTransactions(15, 20251031).map(({id,...t}) => t);
   assert.deepEqual(a, b);
 });
+
+test("applies learned category rules to ordinary mock history", () => {
+  const rules = [{ merchantNormalized: 'JIO', category: 'Connectivity', id: 'r1', merchantDisplay: 'Jio', hitCount: 1, updatedAt: new Date().toISOString() }];
+  const rows = mock.generateMockTransactions(35, 20251031, rules);
+  assert.ok(rows.some((t) => t.merchantNormalized === 'JIO' && t.category === 'Connectivity'));
+});
