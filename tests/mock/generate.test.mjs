@@ -25,3 +25,8 @@ test('labels generated test transaction sources as test', () => {
 test('uses INR as the currency for generated test transactions', () => {
   assert.ok(mock.generateTestTransactions(8).every((t) => t.currency === 'INR'));
 });
+
+test("generates unique IDs for a generated batch", () => {
+  const rows = mock.generateTestTransactions(25);
+  assert.equal(new Set(rows.map((t) => t.id)).size, rows.length);
+});
