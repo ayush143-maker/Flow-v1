@@ -110,3 +110,7 @@ test("accepts a consistent amount difference below the variance threshold", () =
   const rows = [tx(1, { amountMinor: 10000 }), tx(31, { amountMinor: 12500 })];
   assert.equal(recurring.detectRecurring(rows).length, 1);
 });
+
+test("rejects an interval shorter than the weekly minimum", () => {
+  assert.deepEqual(recurring.detectRecurring([tx(1), tx(5)]), []);
+});
