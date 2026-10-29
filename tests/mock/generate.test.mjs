@@ -79,3 +79,9 @@ test("honors a zero test transaction count", () => {
 test("honors a single test transaction request", () => {
   assert.equal(mock.generateTestTransactions(1).length, 1);
 });
+
+test("applies a learned category rule to generated test data", () => {
+  const rules = [{ merchantNormalized: 'SWIGGY', category: 'Custom food', id: 'r1', merchantDisplay: 'Swiggy', hitCount: 1, updatedAt: new Date().toISOString() }];
+  const rows = mock.generateTestTransactions(100, rules);
+  assert.ok(rows.some((t) => t.merchantNormalized === 'SWIGGY' && t.category === 'Custom food'));
+});
