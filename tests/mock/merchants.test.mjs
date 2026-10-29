@@ -69,3 +69,7 @@ test("catalogue includes food merchants", () => {
 test("catalogue includes recurring subscriptions", () => {
   assert.ok(MERCHANTS.some((m) => m.category === 'Subscriptions' && m.recurringDay !== undefined));
 });
+
+test("catalogue includes credit examples", () => {
+  assert.ok(MERCHANTS.some((m) => m.credit === true));
+});
