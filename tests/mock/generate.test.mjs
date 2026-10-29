@@ -38,3 +38,7 @@ test("stores amounts in integer paise", () => {
 test("keeps generated test amounts non-negative", () => {
   assert.ok(mock.generateTestTransactions(20).every((t) => t.amountMinor >= 0));
 });
+
+test("normalizes the merchant key consistently", () => {
+  assert.ok(mock.generateTestTransactions(20).every((t) => t.merchantNormalized === t.merchant.toUpperCase().replace(/[^A-Z0-9 ]/g, '').replace(/\s+/g, ' ').trim()));
+});
