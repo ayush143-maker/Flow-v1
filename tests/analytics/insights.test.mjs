@@ -112,3 +112,10 @@ test("largest spend picks the highest debit", () => {
   const item = generateInsights(rows, new Date(2024, 1, 15)).find((x) => x.id === 'largest');
   assert.ok(item.title.includes('Big Store'));
 });
+
+test("largest spend ignores a higher credit amount", () => {
+  const rows = [tx(5, 1, { amountMinor: 2000 }), tx(6, 1, { type: 'credit', amountMinor: 900000, merchant: 'Salary' })];
+  const item = generateInsights(rows, new Date(2024, 1, 15)).find((x) => x.id === 'largest');
+  assert.ok(item.title.includes('₹20'));
+  assert.equal(item.title.includes('Salary'), false);
+});
