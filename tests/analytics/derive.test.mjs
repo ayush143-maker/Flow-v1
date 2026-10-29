@@ -127,3 +127,9 @@ test("credit filter preserves relative order", () => {
   const rows = [tx({ id: 'debit' }), tx({ id: 'credit-1', type: 'credit' }), tx({ id: 'credit-2', type: 'credit' })];
   assert.deepEqual(analytics.credits(rows).map((x) => x.id), ['credit-1', 'credit-2']);
 });
+
+test("range excludes a transaction before the start", () => {
+  const from = new Date(2024, 0, 2);
+  const to = new Date(2024, 0, 4);
+  assert.equal(analytics.inRange([tx({ transactionDate: new Date(2024,0,1,12).toISOString() })], from, to).length, 0);
+});
