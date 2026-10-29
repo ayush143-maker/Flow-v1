@@ -255,3 +255,7 @@ test("start of day clears minutes", () => {
 test("add days supports a negative offset", () => {
   assert.equal(format.addDays(new Date(2024, 0, 10), -3).getDate(), 7);
 });
+
+test("start of month clears the time component", () => {
+  assert.equal(format.startOfMonth(new Date(2024, 5, 9, 18, 45)).getHours(), 0);
+});
