@@ -213,3 +213,9 @@ test("monthly trend includes a debit in the current week's bucket", () => {
   const values = analytics.buckets([tx({ transactionDate: day.toISOString(), amountMinor: 555 })], 'monthly', day);
   assert.equal(values[5].value, 555);
 });
+
+test("yearly trend includes a debit in the current month bucket", () => {
+  const day = new Date(2024, 0, 10, 12);
+  const values = analytics.buckets([tx({ transactionDate: day.toISOString(), amountMinor: 444 })], 'yearly', day);
+  assert.equal(values[11].value, 444);
+});
