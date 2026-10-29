@@ -243,3 +243,7 @@ test("compact formatter uses crore suffix at one crore rupees", () => {
 test("month label does not include a day number", () => {
   assert.equal(format.monthLabel(new Date(2024, 0, 29)), 'January');
 });
+
+test("start of day clears milliseconds", () => {
+  assert.equal(format.startOfDay(new Date(2024, 0, 1, 8, 9, 10, 555)).getMilliseconds(), 0);
+});
