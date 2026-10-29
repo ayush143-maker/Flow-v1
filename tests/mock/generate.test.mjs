@@ -112,3 +112,7 @@ test("applies learned category rules to ordinary mock history", () => {
   const rows = mock.generateMockTransactions(35, 20251031, rules);
   assert.ok(rows.some((t) => t.merchantNormalized === 'JIO' && t.category === 'Connectivity'));
 });
+
+test("returns an array for ordinary mock history", () => {
+  assert.ok(Array.isArray(mock.generateMockTransactions(10, 20251031)));
+});
