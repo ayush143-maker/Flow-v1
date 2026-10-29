@@ -142,3 +142,7 @@ test("period statistics compute rounded daily average", () => {
   const p = analytics.periodStats([tx({ amountMinor: 100 })], new Date(2024,0,1), new Date(2024,0,4));
   assert.equal(p.avgDailyMinor, 33);
 });
+
+test("category breakdown returns an empty list for no transactions", () => {
+  assert.deepEqual(analytics.categoryBreakdown([]), []);
+});
