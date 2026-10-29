@@ -275,3 +275,7 @@ test("percent change handles identical values", () => {
 test("FNV hash returns eight lowercase hex characters", () => {
   assert.match(format.fnv1a('Flow app'), /^[0-9a-f]{8}$/);
 });
+
+test("merchant normalization trims whitespace", () => {
+  assert.equal(format.normalizeMerchant('  Store  '), 'STORE');
+});
