@@ -120,3 +120,7 @@ test("merchant category names have no surrounding whitespace", () => {
 test("catalogue has more than ten distinct categories", () => {
   assert.ok(new Set(MERCHANTS.map((m) => m.category)).size > 10);
 });
+
+test("both account instruments are non-empty strings", () => {
+  assert.ok([ACCOUNTS.savings.instrument, ACCOUNTS.card.instrument].every((v) => typeof v === 'string' && v.length > 0));
+});
