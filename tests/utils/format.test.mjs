@@ -271,3 +271,7 @@ test("percent change handles a large increase", () => {
 test("percent change handles identical values", () => {
   assert.equal(format.percentChange(100, 100), 0);
 });
+
+test("FNV hash returns eight lowercase hex characters", () => {
+  assert.match(format.fnv1a('Flow app'), /^[0-9a-f]{8}$/);
+});
