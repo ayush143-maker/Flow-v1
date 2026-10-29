@@ -116,3 +116,7 @@ test("merchant names have no surrounding whitespace", () => {
 test("merchant category names have no surrounding whitespace", () => {
   assert.ok(MERCHANTS.every((m) => m.category === m.category.trim()));
 });
+
+test("catalogue has more than ten distinct categories", () => {
+  assert.ok(new Set(MERCHANTS.map((m) => m.category)).size > 10);
+});
