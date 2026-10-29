@@ -122,3 +122,8 @@ test("debit filter preserves relative order", () => {
   const rows = [tx({ id: 'first' }), tx({ id: 'credit', type: 'credit' }), tx({ id: 'last' })];
   assert.deepEqual(analytics.debits(rows).map((x) => x.id), ['first', 'last']);
 });
+
+test("credit filter preserves relative order", () => {
+  const rows = [tx({ id: 'debit' }), tx({ id: 'credit-1', type: 'credit' }), tx({ id: 'credit-2', type: 'credit' })];
+  assert.deepEqual(analytics.credits(rows).map((x) => x.id), ['credit-1', 'credit-2']);
+});
