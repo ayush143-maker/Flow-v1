@@ -317,3 +317,7 @@ test("merchant normalizer is idempotent", () => {
 test("date short output contains the day number", () => {
   assert.match(format.dateShort(new Date(2024,0,2), new Date(2024,5,1)), /2/);
 });
+
+test("compact values preserve a rupee prefix", () => {
+  assert.match(format.formatMoneyCompact(150000), /^₹/);
+});
