@@ -105,3 +105,9 @@ test("adds days across a month boundary", () => {
   assert.equal(format.addDays(new Date(2024, 0, 31), 1).getDate(), 1);
   assert.equal(format.addDays(new Date(2024, 0, 31), 1).getMonth(), 1);
 });
+
+test("returns the first day of the month", () => {
+  const d = format.startOfMonth(new Date(2024, 4, 19, 12));
+  assert.equal(d.getDate(), 1);
+  assert.equal(d.getMonth(), 4);
+});
