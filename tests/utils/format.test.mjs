@@ -263,3 +263,7 @@ test("start of month clears the time component", () => {
 test("percent change rounds fractional percentages", () => {
   assert.equal(format.percentChange(2, 3), -33);
 });
+
+test("percent change handles a large increase", () => {
+  assert.equal(format.percentChange(2000, 100), 1900);
+});
