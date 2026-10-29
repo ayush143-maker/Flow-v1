@@ -112,3 +112,7 @@ test("every credit entry has a usable amount range", () => {
 test("merchant names have no surrounding whitespace", () => {
   assert.ok(MERCHANTS.every((m) => m.name === m.name.trim()));
 });
+
+test("merchant category names have no surrounding whitespace", () => {
+  assert.ok(MERCHANTS.every((m) => m.category === m.category.trim()));
+});
