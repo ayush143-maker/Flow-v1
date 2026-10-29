@@ -191,3 +191,11 @@ test("January month-to-date comparison begins in the previous December", () => {
   assert.equal(p.prevFrom.getFullYear(), 2023);
   assert.equal(p.prevFrom.getMonth(), 11);
 });
+
+test("January month-to-date ends at the next local midnight", () => {
+  const p = analytics.monthToDate(new Date(2024, 0, 15, 12));
+  assert.equal(p.to.getFullYear(), 2024);
+  assert.equal(p.to.getMonth(), 0);
+  assert.equal(p.to.getDate(), 16);
+  assert.equal(p.to.getHours(), 0);
+});
