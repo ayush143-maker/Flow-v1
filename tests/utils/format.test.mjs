@@ -313,3 +313,7 @@ test("merchant normalizer is idempotent", () => {
   const once = format.normalizeMerchant('Mixed  Store-Name 2');
   assert.equal(format.normalizeMerchant(once), once);
 });
+
+test("date short output contains the day number", () => {
+  assert.match(format.dateShort(new Date(2024,0,2), new Date(2024,5,1)), /2/);
+});
