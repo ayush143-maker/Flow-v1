@@ -54,3 +54,8 @@ test("generates a message hash for test transactions", () => {
 test("generates parseable timestamps for test transactions", () => {
   assert.ok(mock.generateTestTransactions(10).every((t) => Number.isFinite(Date.parse(t.transactionDate)) && Number.isFinite(Date.parse(t.createdAt))));
 });
+
+test("sorts generated test transactions newest first", () => {
+  const rows = mock.generateTestTransactions(50);
+  assert.deepEqual(rows.map((t) => t.transactionDate), [...rows].map((t) => t.transactionDate).sort((a,b) => b.localeCompare(a)));
+});
