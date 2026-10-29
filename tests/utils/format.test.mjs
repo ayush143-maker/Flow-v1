@@ -259,3 +259,7 @@ test("add days supports a negative offset", () => {
 test("start of month clears the time component", () => {
   assert.equal(format.startOfMonth(new Date(2024, 5, 9, 18, 45)).getHours(), 0);
 });
+
+test("percent change rounds fractional percentages", () => {
+  assert.equal(format.percentChange(2, 3), -33);
+});
