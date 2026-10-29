@@ -138,3 +138,7 @@ test("ordinary mock hashes use the expected FNV hex format", () => {
 test("test data exposes all mandatory transaction fields", () => {
   assert.ok(mock.generateTestTransactions(20).every((t) => t.id && t.currency && t.merchant && t.category && t.transactionDate && t.createdAt && t.messageHash));
 });
+
+test("test data contains only debit or credit transaction types", () => {
+  assert.ok(mock.generateTestTransactions(50).every((t) => ['debit','credit'].includes(t.type)));
+});
