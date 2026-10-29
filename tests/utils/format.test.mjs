@@ -223,3 +223,7 @@ test("normalizes newlines as merchant whitespace", () => {
 test("does not treat punctuation as merchant identity", () => {
   assert.equal(format.normalizeMerchant('A-B'), format.normalizeMerchant('AB'));
 });
+
+test("preserves numeric merchant characters", () => {
+  assert.equal(format.normalizeMerchant('Store 123'), 'STORE 123');
+});
