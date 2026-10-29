@@ -191,3 +191,7 @@ test("handles a thirty-one-day month", () => {
 test("formats zero rupees without a decimal suffix", () => {
   assert.equal(format.formatMoney(0), '₹0');
 });
+
+test("formats paise below one rupee with two decimals", () => {
+  assert.equal(format.formatMoney(75), '₹0.75');
+});
