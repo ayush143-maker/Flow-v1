@@ -21,3 +21,7 @@ test('merchant minor-unit ranges are ordered', () => {
 test('merchant values use non-negative minor units', () => {
   assert.ok(MERCHANTS.every((m) => m.minMinor >= 0 && m.maxMinor >= 0));
 });
+
+test("merchant payment methods are populated", () => {
+  assert.ok(MERCHANTS.every((m) => ['upi','card','netbanking','atm','wallet','bank_transfer','cash','unknown'].includes(m.method)));
+});
