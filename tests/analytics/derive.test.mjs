@@ -234,3 +234,8 @@ test("same-day debits are added into one daily bucket", () => {
   const rows = [tx({ amountMinor: 300, transactionDate: day.toISOString() }), tx({ id: 'b', amountMinor: 200, transactionDate: new Date(2024,0,2,18).toISOString() })];
   assert.deepEqual(analytics.dailyTotals(rows, 3, new Date(2024,0,3,18)), [0, 500, 0]);
 });
+
+test("category slices retain the correct transaction count", () => {
+  const slices = analytics.categoryBreakdown([tx({ amountMinor: 10 }), tx({ id: 'b', amountMinor: 20 }), tx({ id: 'c', amountMinor: 30, category: 'Bills' })]);
+  assert.equal(slices.find((x) => x.category === 'Food').count, 2);
+});
