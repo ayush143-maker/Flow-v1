@@ -187,3 +187,7 @@ test("handles a non-leap thirty-day month", () => {
 test("handles a thirty-one-day month", () => {
   assert.equal(format.daysInMonth(new Date(2024, 0, 20)), 31);
 });
+
+test("formats zero rupees without a decimal suffix", () => {
+  assert.equal(format.formatMoney(0), '₹0');
+});
