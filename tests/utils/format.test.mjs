@@ -139,3 +139,7 @@ test("formats a month label in the Indian locale", () => {
 test("normalizes repeated spaces in merchant names", () => {
   assert.equal(format.normalizeMerchant('alpha     beta'), 'ALPHA BETA');
 });
+
+test("normalizes punctuation-only merchant names to an empty key", () => {
+  assert.equal(format.normalizeMerchant('!@#$%'), '');
+});
