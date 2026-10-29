@@ -82,3 +82,8 @@ test("sorts recurring payments by monthly equivalent descending", () => {
   const found = recurring.detectRecurring(rows);
   assert.equal(found[0].merchantNormalized, 'HIGH');
 });
+
+test("does not combine separate merchant keys", () => {
+  const rows = [tx(1, { merchantNormalized: 'A' }), tx(31, { merchantNormalized: 'B' })];
+  assert.deepEqual(recurring.detectRecurring(rows), []);
+});
