@@ -131,3 +131,7 @@ test("labels the preceding local date as yesterday", () => {
   const priorDay = new Date(2024, 0, 1, 8).toISOString();
   assert.equal(format.dayLabel(priorDay, now), 'Yesterday');
 });
+
+test("formats a month label in the Indian locale", () => {
+  assert.equal(format.monthLabel(new Date(2024, 0, 1)), 'January');
+});
