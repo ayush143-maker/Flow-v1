@@ -147,3 +147,7 @@ test("normalizes punctuation-only merchant names to an empty key", () => {
 test("preserves date arithmetic over year boundaries", () => {
   assert.equal(format.addDays(new Date(2023, 11, 31), 1).getFullYear(), 2024);
 });
+
+test("creates IDs with the requested prefix", () => {
+  assert.match(format.newId('txn'), /^txn_/);
+});
