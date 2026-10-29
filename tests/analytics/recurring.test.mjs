@@ -163,3 +163,7 @@ test("marks a next expected date as parseable ISO text", () => {
   const value = recurring.detectRecurring([tx(1), tx(31)])[0].nextExpected;
   assert.match(value, /^\d{4}-\d{2}-\d{2}T/);
 });
+
+test("uses monthly equivalent for ranking rather than raw yearly amount", () => {
+  assert.equal(recurring.monthlyEquivalentMinor({ frequency: 'yearly', amountMinor: 240000 }), 20000);
+});
