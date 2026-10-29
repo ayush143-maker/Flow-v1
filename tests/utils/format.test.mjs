@@ -179,3 +179,7 @@ test("formats time labels as readable text", () => {
 test("combines date and time in the full date helper", () => {
   assert.ok(format.fullDate(new Date(2024,0,1,13,5).toISOString()).includes('·'));
 });
+
+test("handles a non-leap thirty-day month", () => {
+  assert.equal(format.daysInMonth(new Date(2024, 3, 20)), 30);
+});
