@@ -151,3 +151,9 @@ test("all insight titles and details are populated", () => {
   const rows = [tx(5, 1, { amountMinor: 25000 })];
   assert.ok(generateInsights(rows, new Date(2024, 1, 15)).every((x) => x.title.length > 0 && x.detail.length > 0));
 });
+
+test("repeats the same insights for the same data and reference date", () => {
+  const rows = [tx(5, 1, { category: 'Food', amountMinor: 100000 }), tx(5, 0, { category: 'Food', amountMinor: 50000 })];
+  const now = new Date(2024, 1, 15);
+  assert.deepEqual(generateInsights(rows, now), generateInsights(rows, now));
+});
