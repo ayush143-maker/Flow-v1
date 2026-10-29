@@ -185,3 +185,9 @@ test("yearly previous range ends where the current range begins", () => {
   const p = analytics.periodFor('yearly', new Date(2024, 5, 18));
   assert.equal(p.prevTo.getTime(), p.from.getTime());
 });
+
+test("January month-to-date comparison begins in the previous December", () => {
+  const p = analytics.monthToDate(new Date(2024, 0, 15, 12));
+  assert.equal(p.prevFrom.getFullYear(), 2023);
+  assert.equal(p.prevFrom.getMonth(), 11);
+});
