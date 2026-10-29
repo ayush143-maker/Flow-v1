@@ -92,3 +92,8 @@ test("keeps the merchant label from the most recent transaction", () => {
   const rows = [tx(1, { merchant: 'Streaming' }), tx(31, { merchant: 'STREAMING*SUB' })];
   assert.equal(recurring.detectRecurring(rows)[0].merchant, 'STREAMING*SUB');
 });
+
+test("returns an ISO timestamp for the next expected date", () => {
+  const next = recurring.detectRecurring([tx(1), tx(31)])[0].nextExpected;
+  assert.ok(Number.isFinite(Date.parse(next)));
+});
