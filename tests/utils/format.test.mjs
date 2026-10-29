@@ -235,3 +235,7 @@ test("compact formatter uses k suffix for one thousand rupees", () => {
 test("compact formatter uses lakh suffix at one lakh rupees", () => {
   assert.equal(format.formatMoneyCompact(10000000), '₹1.0L');
 });
+
+test("compact formatter uses crore suffix at one crore rupees", () => {
+  assert.equal(format.formatMoneyCompact(1000000000), '₹1.0Cr');
+});
