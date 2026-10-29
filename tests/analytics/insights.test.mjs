@@ -141,3 +141,8 @@ test("keeps generated insight IDs unique", () => {
   const ids = generateInsights(rows, new Date(2024, 1, 15)).map((x) => x.id);
   assert.equal(new Set(ids).size, ids.length);
 });
+
+test("all insight tones use the supported set", () => {
+  const rows = [tx(5, 1, { category: 'Food', amountMinor: 100000 }), tx(5, 0, { category: 'Food', amountMinor: 50000 })];
+  assert.ok(generateInsights(rows, new Date(2024, 1, 15)).every((x) => ['up','down','info','warn'].includes(x.tone)));
+});
