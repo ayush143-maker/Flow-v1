@@ -96,3 +96,7 @@ test("catalogue has at least one non-credit debit", () => {
 test("merchant amount bounds are integer paise", () => {
   assert.ok(MERCHANTS.every((m) => Number.isInteger(m.minMinor) && Number.isInteger(m.maxMinor)));
 });
+
+test("fixed merchant amounts stay inside their declared bounds", () => {
+  assert.ok(MERCHANTS.filter((m) => m.fixedMinor !== undefined).every((m) => m.fixedMinor >= m.minMinor && m.fixedMinor <= m.maxMinor));
+});
