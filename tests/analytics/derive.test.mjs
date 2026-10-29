@@ -151,3 +151,8 @@ test("top merchants uses five as the default limit", () => {
   const rows = Array.from({ length: 7 }, (_, i) => tx({ id: String(i), merchantNormalized: 'M' + i, amountMinor: 100 + i }));
   assert.equal(analytics.topMerchants(rows).length, 5);
 });
+
+test("top merchants ranks greater total amounts first", () => {
+  const rows = [tx({ merchantNormalized: 'LOW', amountMinor: 100 }), tx({ id: 'high', merchantNormalized: 'HIGH', amountMinor: 900 })];
+  assert.equal(analytics.topMerchants(rows)[0].merchantNormalized, 'HIGH');
+});
