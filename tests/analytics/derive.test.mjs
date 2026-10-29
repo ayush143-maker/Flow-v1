@@ -160,3 +160,8 @@ test("top merchants ranks greater total amounts first", () => {
 test("daily totals returns zeros when the input has no transactions", () => {
   assert.deepEqual(analytics.dailyTotals([], 4, new Date(2024,0,4)), [0, 0, 0, 0]);
 });
+
+test("daily totals ignores records after the selected end day", () => {
+  const later = tx({ transactionDate: new Date(2024,0,5,12).toISOString(), amountMinor: 900 });
+  assert.deepEqual(analytics.dailyTotals([later], 3, new Date(2024,0,3,20)), [0, 0, 0]);
+});
