@@ -133,3 +133,7 @@ test("range excludes a transaction before the start", () => {
   const to = new Date(2024, 0, 4);
   assert.equal(analytics.inRange([tx({ transactionDate: new Date(2024,0,1,12).toISOString() })], from, to).length, 0);
 });
+
+test("range selects no transactions from an empty input", () => {
+  assert.deepEqual(analytics.inRange([], new Date(2024,0,1), new Date(2024,0,2)), []);
+});
