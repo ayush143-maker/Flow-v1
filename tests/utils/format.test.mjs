@@ -300,3 +300,7 @@ test("day label falls back to a date for older entries", () => {
 test("formatting preserves INR currency notation", () => {
   assert.match(format.formatMoney(12345), /₹/);
 });
+
+test("month start remains the first day after adding no offset", () => {
+  assert.equal(format.startOfMonth(new Date(2024,8,30)).getDate(), 1);
+});
