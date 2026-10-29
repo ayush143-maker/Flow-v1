@@ -142,3 +142,7 @@ test("test data exposes all mandatory transaction fields", () => {
 test("test data contains only debit or credit transaction types", () => {
   assert.ok(mock.generateTestTransactions(50).every((t) => ['debit','credit'].includes(t.type)));
 });
+
+test("test data keeps normalized merchant keys non-empty", () => {
+  assert.ok(mock.generateTestTransactions(50).every((t) => t.merchantNormalized.length > 0));
+});
