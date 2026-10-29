@@ -114,3 +114,7 @@ test("accepts a consistent amount difference below the variance threshold", () =
 test("rejects an interval shorter than the weekly minimum", () => {
   assert.deepEqual(recurring.detectRecurring([tx(1), tx(5)]), []);
 });
+
+test("rejects an interval between weekly and monthly bands", () => {
+  assert.deepEqual(recurring.detectRecurring([tx(1), tx(11)]), []);
+});
