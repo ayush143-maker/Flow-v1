@@ -116,3 +116,9 @@ test("applies learned category rules to ordinary mock history", () => {
 test("returns an array for ordinary mock history", () => {
   assert.ok(Array.isArray(mock.generateMockTransactions(10, 20251031)));
 });
+
+test("different seeds vary ordinary mock transaction fields", () => {
+  const a = mock.generateMockTransactions(40, 20251031).map(({id,...t}) => t);
+  const b = mock.generateMockTransactions(40, 20251032).map(({id,...t}) => t);
+  assert.notDeepEqual(a, b);
+});
