@@ -1,0 +1,27 @@
+import { after, before, test } from 'node:test';
+import assert from 'node:assert/strict';
+import { createServer } from 'vite';
+
+let server;
+let mock;
+before(async () => {
+  server = await createServer({ configFile: 'vite.config.ts', server: { middlewareMode: true }, appType: 'custom' });
+  mock = await server.ssrLoadModule('/src/services/mock/generate.ts');
+});
+after(async () => { await server?.close(); });
+
+test('returns an empty array for zero mock history days', () => {
+  assert.deepEqual(mock.generateMockTransactions(0, 123), []);
+});
+test('creates the requested number of test transactions', () => {
+  assert.equal(mock.generateTestTransactions(12).length, 12);
+});
+test('marks every generated test transaction as test data', () => {
+  assert.ok(mock.generateTestTransactions(8).every((t) => t.isTestData === true));
+});
+test('labels generated test transaction sources as test', () => {
+  assert.ok(mock.generateTestTransactions(8).every((t) => t.source === 'test'));
+});
+test('uses INR as the currency for generated test transactions', () => {
+  assert.ok(mock.generateTestTransactions(8).every((t) => t.currency === 'INR'));
+});
