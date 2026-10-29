@@ -87,3 +87,8 @@ test("does not combine separate merchant keys", () => {
   const rows = [tx(1, { merchantNormalized: 'A' }), tx(31, { merchantNormalized: 'B' })];
   assert.deepEqual(recurring.detectRecurring(rows), []);
 });
+
+test("keeps the merchant label from the most recent transaction", () => {
+  const rows = [tx(1, { merchant: 'Streaming' }), tx(31, { merchant: 'STREAMING*SUB' })];
+  assert.equal(recurring.detectRecurring(rows)[0].merchant, 'STREAMING*SUB');
+});
