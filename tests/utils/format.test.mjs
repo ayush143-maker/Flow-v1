@@ -304,3 +304,7 @@ test("formatting preserves INR currency notation", () => {
 test("month start remains the first day after adding no offset", () => {
   assert.equal(format.startOfMonth(new Date(2024,8,30)).getDate(), 1);
 });
+
+test("adding zero days preserves the calendar date", () => {
+  assert.equal(format.addDays(new Date(2024,4,14), 0).getDate(), 14);
+});
