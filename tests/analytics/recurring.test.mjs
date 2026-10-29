@@ -64,3 +64,7 @@ test('predicts the next date from the last observed date', () => {
 test('keeps monthly equivalent unchanged for monthly payments', () => {
   assert.equal(recurring.monthlyEquivalentMinor({ frequency: 'monthly', amountMinor: 12000 }), 12000);
 });
+
+test("converts weekly payments to a monthly equivalent", () => {
+  assert.equal(recurring.monthlyEquivalentMinor({ frequency: 'weekly', amountMinor: 43300 }), 10000);
+});
