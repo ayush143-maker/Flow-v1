@@ -321,3 +321,7 @@ test("date short output contains the day number", () => {
 test("compact values preserve a rupee prefix", () => {
   assert.match(format.formatMoneyCompact(150000), /^₹/);
 });
+
+test("FNV output is stable over repeated calls", () => {
+  assert.equal(format.fnv1a('same'), format.fnv1a('same'));
+});
