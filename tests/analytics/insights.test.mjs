@@ -135,3 +135,9 @@ test("does not report category trend when previous category has no spending", ()
   const rows = [tx(5, 1, { category: 'Travel', amountMinor: 100000 })];
   assert.equal(generateInsights(rows, new Date(2024, 1, 15)).some((x) => x.id === 'cat-up' || x.id === 'cat-down'), false);
 });
+
+test("keeps generated insight IDs unique", () => {
+  const rows = [tx(5, 1, { category: 'Food', amountMinor: 100000 }), tx(5, 0, { category: 'Food', amountMinor: 50000 })];
+  const ids = generateInsights(rows, new Date(2024, 1, 15)).map((x) => x.id);
+  assert.equal(new Set(ids).size, ids.length);
+});
