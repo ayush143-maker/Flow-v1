@@ -135,3 +135,7 @@ test("labels the preceding local date as yesterday", () => {
 test("formats a month label in the Indian locale", () => {
   assert.equal(format.monthLabel(new Date(2024, 0, 1)), 'January');
 });
+
+test("normalizes repeated spaces in merchant names", () => {
+  assert.equal(format.normalizeMerchant('alpha     beta'), 'ALPHA BETA');
+});
