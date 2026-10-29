@@ -207,3 +207,7 @@ test("reports no percentage change when previous amount is zero", () => {
 test("computes a twenty-five-percent increase", () => {
   assert.equal(format.percentChange(125, 100), 25);
 });
+
+test("computes a twenty-five-percent decrease", () => {
+  assert.equal(format.percentChange(75, 100), -25);
+});
