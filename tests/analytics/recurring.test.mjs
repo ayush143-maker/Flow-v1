@@ -130,3 +130,9 @@ test("recognizes a yearly interval around 365 days", () => {
   assert.equal(found.length, 1);
   assert.equal(found[0].frequency, 'yearly');
 });
+
+test("accepts a ten-day spread between monthly intervals", () => {
+  const found = recurring.detectRecurring([tx(1), tx(26), tx(61)]);
+  assert.equal(found.length, 1);
+  assert.equal(found[0].frequency, 'monthly');
+});
