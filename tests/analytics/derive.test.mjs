@@ -228,3 +228,9 @@ test("positive category shares add up to one", () => {
 test("category breakdown is empty when there are only credits", () => {
   assert.deepEqual(analytics.categoryBreakdown([tx({ type: 'credit', category: 'Salary' })]), []);
 });
+
+test("same-day debits are added into one daily bucket", () => {
+  const day = new Date(2024, 0, 2, 12);
+  const rows = [tx({ amountMinor: 300, transactionDate: day.toISOString() }), tx({ id: 'b', amountMinor: 200, transactionDate: new Date(2024,0,2,18).toISOString() })];
+  assert.deepEqual(analytics.dailyTotals(rows, 3, new Date(2024,0,3,18)), [0, 500, 0]);
+});
