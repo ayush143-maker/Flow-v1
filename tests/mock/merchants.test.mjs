@@ -1,24 +1,39 @@
-import { test } from 'node:test';
+import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MERCHANTS, ACCOUNTS } from '../../src/services/mock/merchants.ts';
+import { createServer } from 'vite';
 
-test('merchant catalogue contains named entries', () => {
+let server;
+let MERCHANTS;
+let ACCOUNTS;
+before(async () => {
+  server = await createServer({ configFile: 'vite.config.ts', server: { middlewareMode: true }, appType: 'custom' });
+  ({ MERCHANTS, ACCOUNTS } = await server.ssrLoadModule('/src/services/mock/merchants.ts'));
+});
+after(async () => { await server?.close(); });
+
+
+test("merchant catalogue contains named entries", () => {
   assert.ok(MERCHANTS.length > 0);
 });
-test('merchant names are unique', () => {
+
+test("merchant names are unique", () => {
   const names = MERCHANTS.map((m) => m.name);
   assert.equal(new Set(names).size, names.length);
 });
-test('merchant names are non-empty', () => {
+
+test("merchant names are non-empty", () => {
   assert.ok(MERCHANTS.every((m) => m.name.trim().length > 0));
 });
-test('merchant categories are non-empty', () => {
+
+test("merchant categories are non-empty", () => {
   assert.ok(MERCHANTS.every((m) => m.category.trim().length > 0));
 });
-test('merchant minor-unit ranges are ordered', () => {
+
+test("merchant minor-unit ranges are ordered", () => {
   assert.ok(MERCHANTS.every((m) => m.minMinor <= m.maxMinor));
 });
-test('merchant values use non-negative minor units', () => {
+
+test("merchant values use non-negative minor units", () => {
   assert.ok(MERCHANTS.every((m) => m.minMinor >= 0 && m.maxMinor >= 0));
 });
 
