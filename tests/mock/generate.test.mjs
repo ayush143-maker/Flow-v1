@@ -63,3 +63,7 @@ test("sorts generated test transactions newest first", () => {
 test("provides transaction metadata for test data", () => {
   assert.ok(mock.generateTestTransactions(12).every((t) => t.metadata && typeof t.metadata.bank === 'string'));
 });
+
+test("keeps transaction references non-empty in test messages", () => {
+  assert.ok(mock.generateTestTransactions(12).every((t) => typeof t.referenceId === 'string' && t.referenceId.length > 0));
+});
