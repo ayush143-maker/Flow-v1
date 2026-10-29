@@ -167,3 +167,7 @@ test("formats day and month consistently", () => {
 test("includes the year for a date from an older year", () => {
   assert.equal(format.dateShort(new Date(2023, 0, 2), new Date(2024, 5, 1)), '2 Jan 2023');
 });
+
+test("omits the year for a date in the current year", () => {
+  assert.equal(format.dateShort(new Date(2024, 0, 2), new Date(2024, 5, 1)), '2 Jan');
+});
