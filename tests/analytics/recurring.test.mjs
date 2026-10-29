@@ -158,3 +158,8 @@ test("ignores intervening credits when grouping debits", () => {
 test("returns no recurring payments for an empty history", () => {
   assert.deepEqual(recurring.detectRecurring([]), []);
 });
+
+test("marks a next expected date as parseable ISO text", () => {
+  const value = recurring.detectRecurring([tx(1), tx(31)])[0].nextExpected;
+  assert.match(value, /^\d{4}-\d{2}-\d{2}T/);
+});
