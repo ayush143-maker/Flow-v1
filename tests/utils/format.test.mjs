@@ -89,3 +89,7 @@ test("returns an empty normalized key for empty merchant text", () => {
 test("produces the known FNV-1a hash for hello", () => {
   assert.equal(format.fnv1a('hello'), '4f9f2cab');
 });
+
+test("produces the FNV-1a offset basis hash for an empty string", () => {
+  assert.equal(format.fnv1a(''), '811c9dc5');
+});
