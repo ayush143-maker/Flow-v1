@@ -59,3 +59,7 @@ test("sorts generated test transactions newest first", () => {
   const rows = mock.generateTestTransactions(50);
   assert.deepEqual(rows.map((t) => t.transactionDate), [...rows].map((t) => t.transactionDate).sort((a,b) => b.localeCompare(a)));
 });
+
+test("provides transaction metadata for test data", () => {
+  assert.ok(mock.generateTestTransactions(12).every((t) => t.metadata && typeof t.metadata.bank === 'string'));
+});
