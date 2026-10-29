@@ -101,3 +101,7 @@ test("returns an ISO timestamp for the next expected date", () => {
 test("accepts a monthly interval near thirty days", () => {
   assert.equal(recurring.detectRecurring([tx(1), tx(30)])[0].frequency, 'monthly');
 });
+
+test("does not mark an exact thirty-day two-point interval as certain", () => {
+  assert.equal(recurring.detectRecurring([tx(1), tx(31)])[0].isEstimate, true);
+});
