@@ -156,3 +156,7 @@ test("top merchants ranks greater total amounts first", () => {
   const rows = [tx({ merchantNormalized: 'LOW', amountMinor: 100 }), tx({ id: 'high', merchantNormalized: 'HIGH', amountMinor: 900 })];
   assert.equal(analytics.topMerchants(rows)[0].merchantNormalized, 'HIGH');
 });
+
+test("daily totals returns zeros when the input has no transactions", () => {
+  assert.deepEqual(analytics.dailyTotals([], 4, new Date(2024,0,4)), [0, 0, 0, 0]);
+});
