@@ -73,3 +73,7 @@ test("uses the morning greeting from five", () => {
 test("uses the afternoon greeting from noon", () => {
   assert.equal(format.greeting(new Date(2024, 0, 1, 12)), 'Good afternoon');
 });
+
+test("uses the evening greeting from five", () => {
+  assert.equal(format.greeting(new Date(2024, 0, 1, 17)), 'Good evening');
+});
