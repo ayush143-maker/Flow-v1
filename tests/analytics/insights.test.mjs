@@ -96,3 +96,8 @@ test("does not create cash insight for other categories", () => {
   const rows = [tx(5, 1, { category: 'Bills', amountMinor: 20000 })];
   assert.equal(generateInsights(rows, new Date(2024, 1, 15)).some((x) => x.id === 'cash'), false);
 });
+
+test("ignores previous-month credits in the category comparison", () => {
+  const rows = [tx(5, 1, { category: 'Food', amountMinor: 100000 }), tx(5, 0, { type: 'credit', category: 'Food', amountMinor: 200000 })];
+  assert.equal(generateInsights(rows, new Date(2024, 1, 15)).some((x) => x.id === 'cat-up'), false);
+});
