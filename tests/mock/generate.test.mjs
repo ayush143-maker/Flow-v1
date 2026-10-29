@@ -67,3 +67,7 @@ test("provides transaction metadata for test data", () => {
 test("keeps transaction references non-empty in test messages", () => {
   assert.ok(mock.generateTestTransactions(12).every((t) => typeof t.referenceId === 'string' && t.referenceId.length > 0));
 });
+
+test("sets creation time equal to transaction time in mock records", () => {
+  assert.ok(mock.generateTestTransactions(12).every((t) => t.createdAt === t.transactionDate));
+});
