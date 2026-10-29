@@ -203,3 +203,7 @@ test("compact formatter rounds sub-thousand rupees", () => {
 test("reports no percentage change when previous amount is zero", () => {
   assert.equal(format.percentChange(0, 0), null);
 });
+
+test("computes a twenty-five-percent increase", () => {
+  assert.equal(format.percentChange(125, 100), 25);
+});
