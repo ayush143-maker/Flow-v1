@@ -119,3 +119,9 @@ test("counts leap February correctly", () => {
 test("counts non-leap February correctly", () => {
   assert.equal(format.daysInMonth(new Date(2023, 1, 5)), 28);
 });
+
+test("labels a transaction on the current local date as today", () => {
+  const now = new Date(2024, 0, 2, 18);
+  const sameDay = new Date(2024, 0, 2, 8).toISOString();
+  assert.equal(format.dayLabel(sameDay, now), 'Today');
+});
