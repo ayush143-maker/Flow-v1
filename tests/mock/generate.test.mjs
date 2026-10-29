@@ -122,3 +122,7 @@ test("different seeds vary ordinary mock transaction fields", () => {
   const b = mock.generateMockTransactions(40, 20251032).map(({id,...t}) => t);
   assert.notDeepEqual(a, b);
 });
+
+test("ordinary mock history carries normalized merchant keys", () => {
+  assert.ok(mock.generateMockTransactions(25, 20251031).every((t) => typeof t.merchantNormalized === 'string' && t.merchantNormalized.length > 0));
+});
