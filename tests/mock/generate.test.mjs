@@ -100,3 +100,9 @@ test("keeps normal mock history source values valid", () => {
   const rows = mock.generateMockTransactions(5, 20251031);
   assert.ok(rows.every((t) => ['sms','notification'].includes(t.source)));
 });
+
+test("uses a repeatable seeded sequence for mock history fields", () => {
+  const a = mock.generateMockTransactions(15, 20251031).map(({id,...t}) => t);
+  const b = mock.generateMockTransactions(15, 20251031).map(({id,...t}) => t);
+  assert.deepEqual(a, b);
+});
