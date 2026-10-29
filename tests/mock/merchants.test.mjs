@@ -100,3 +100,7 @@ test("merchant amount bounds are integer paise", () => {
 test("fixed merchant amounts stay inside their declared bounds", () => {
   assert.ok(MERCHANTS.filter((m) => m.fixedMinor !== undefined).every((m) => m.fixedMinor >= m.minMinor && m.fixedMinor <= m.maxMinor));
 });
+
+test("recurring merchant specs use zero random occurrence rate", () => {
+  assert.ok(MERCHANTS.filter((m) => m.recurringDay !== undefined).every((m) => m.perMonth === 0));
+});
