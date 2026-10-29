@@ -154,3 +154,7 @@ test("ignores intervening credits when grouping debits", () => {
   const rows = [tx(1), tx(10, { type: 'credit' }), tx(31)];
   assert.equal(recurring.detectRecurring(rows).length, 1);
 });
+
+test("returns no recurring payments for an empty history", () => {
+  assert.deepEqual(recurring.detectRecurring([]), []);
+});
