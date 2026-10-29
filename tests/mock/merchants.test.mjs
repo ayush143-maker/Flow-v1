@@ -41,3 +41,7 @@ test("fixed recurring merchants specify a fixed amount", () => {
 test("fixed recurring merchants use a valid day of month", () => {
   assert.ok(MERCHANTS.filter((m) => m.recurringDay !== undefined).every((m) => m.recurringDay >= 1 && m.recurringDay <= 31));
 });
+
+test("credit catalogue entries are explicitly flagged", () => {
+  assert.ok(MERCHANTS.filter((m) => m.name.includes('Credit') || m.name.includes('Refund') || m.name.includes('Cashback')).every((m) => m.credit === true));
+});
