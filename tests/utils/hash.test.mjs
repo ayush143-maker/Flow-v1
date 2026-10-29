@@ -46,3 +46,7 @@ test("returns a promise for asynchronous callers", async () => {
 test("is stable across repeated empty inputs", async () => {
   assert.equal(await sha(''), await sha(''));
 });
+
+test("keeps whitespace significant in fingerprints", async () => {
+  assert.notEqual(await sha('merchant'), await sha('merchant '));
+});
