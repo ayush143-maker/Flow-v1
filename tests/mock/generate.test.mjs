@@ -130,3 +130,7 @@ test("ordinary mock history carries normalized merchant keys", () => {
 test("ordinary mock history carries transaction references", () => {
   assert.ok(mock.generateMockTransactions(25, 20251031).every((t) => typeof t.referenceId === 'string' && t.referenceId.length > 0));
 });
+
+test("ordinary mock hashes use the expected FNV hex format", () => {
+  assert.ok(mock.generateMockTransactions(25, 20251031).every((t) => /^[0-9a-f]{8}$/.test(t.messageHash)));
+});
