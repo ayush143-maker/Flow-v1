@@ -279,3 +279,7 @@ test("FNV hash returns eight lowercase hex characters", () => {
 test("merchant normalization trims whitespace", () => {
   assert.equal(format.normalizeMerchant('  Store  '), 'STORE');
 });
+
+test("date short returns a non-empty result", () => {
+  assert.ok(format.dateShort(new Date(2024, 0, 2), new Date(2024, 5, 1)).length > 0);
+});
