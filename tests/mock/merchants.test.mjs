@@ -33,3 +33,7 @@ test("merchant icons are non-empty", () => {
 test("monthly occurrence rates are non-negative", () => {
   assert.ok(MERCHANTS.every((m) => m.perMonth >= 0));
 });
+
+test("fixed recurring merchants specify a fixed amount", () => {
+  assert.ok(MERCHANTS.filter((m) => m.recurringDay !== undefined).every((m) => Number.isInteger(m.fixedMinor)));
+});
