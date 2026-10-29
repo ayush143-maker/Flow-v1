@@ -29,3 +29,7 @@ test("merchant payment methods are populated", () => {
 test("merchant icons are non-empty", () => {
   assert.ok(MERCHANTS.every((m) => typeof m.icon === 'string' && m.icon.length > 0));
 });
+
+test("monthly occurrence rates are non-negative", () => {
+  assert.ok(MERCHANTS.every((m) => m.perMonth >= 0));
+});
