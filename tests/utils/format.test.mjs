@@ -308,3 +308,8 @@ test("month start remains the first day after adding no offset", () => {
 test("adding zero days preserves the calendar date", () => {
   assert.equal(format.addDays(new Date(2024,4,14), 0).getDate(), 14);
 });
+
+test("merchant normalizer is idempotent", () => {
+  const once = format.normalizeMerchant('Mixed  Store-Name 2');
+  assert.equal(format.normalizeMerchant(once), once);
+});
