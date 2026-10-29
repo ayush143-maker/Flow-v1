@@ -73,3 +73,7 @@ test("catalogue includes recurring subscriptions", () => {
 test("catalogue includes credit examples", () => {
   assert.ok(MERCHANTS.some((m) => m.credit === true));
 });
+
+test("catalogue has at least one non-credit debit", () => {
+  assert.ok(MERCHANTS.some((m) => !m.credit));
+});
