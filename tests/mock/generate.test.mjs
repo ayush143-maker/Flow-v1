@@ -30,3 +30,7 @@ test("generates unique IDs for a generated batch", () => {
   const rows = mock.generateTestTransactions(25);
   assert.equal(new Set(rows.map((t) => t.id)).size, rows.length);
 });
+
+test("stores amounts in integer paise", () => {
+  assert.ok(mock.generateTestTransactions(20).every((t) => Number.isInteger(t.amountMinor)));
+});
