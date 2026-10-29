@@ -46,3 +46,7 @@ test("normalizes the merchant key consistently", () => {
 test("adds source messages to generated test transactions", () => {
   assert.ok(mock.generateTestTransactions(10).every((t) => typeof t.originalMessage === 'string' && t.originalMessage.length > 0));
 });
+
+test("generates a message hash for test transactions", () => {
+  assert.ok(mock.generateTestTransactions(10).every((t) => typeof t.messageHash === 'string' && t.messageHash.length > 0));
+});
