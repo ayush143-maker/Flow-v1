@@ -1,6 +1,8 @@
 # Flow-v1
 
-Flow-v1 is an earlier, more developed iteration of Flow, a local-first personal-finance app built with React, TypeScript, Vite, and Capacitor. Its interface includes transaction management, spending insights, categories, recurring-payment views, onboarding, settings, and navigation between app screens. Application state is persisted locally; the repository does not describe a remote backend.
+Flow-v1 is an earlier, more developed iteration of Flow: a local-first personal-finance app built with React, TypeScript, Vite, and Capacitor. The app includes transaction management, spending insights, categories, recurring-payment views, onboarding, settings, and navigation between screens. Application state is persisted locally; the project does not describe a remote backend.
+
+The top-level `package.json` provides the project scripts, while `vite.config.ts` and `tsconfig.json` configure the Vite and TypeScript parts of the project. The main application code is in `src/`; `capacitor.config.ts` and `android-overlay/` are associated with the native Android work. The repository also includes `docs/`, `scripts/`, `snapshots/`, and `tests/`.
 
 ## Run locally
 
