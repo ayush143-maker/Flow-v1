@@ -41,10 +41,12 @@ The page references `/favicon.svg`. Preserve that root-relative path if the favi
 
 ## Manual review checklist
 
-Use these actions after relevant changes; they are review steps to perform, not verified results.
+Use these actions after relevant changes. This is a review checklist, not a report of completed checks or measured performance.
 
 - Open the app using the local Vite preview and navigate to the screen or flow affected by the change. Try relevant transaction, settings, or onboarding interactions.
-- Check that referenced images or other media load from their paths. For page-level icon changes, check that the `/favicon.svg` reference matches the file location.
+- Check that local image, audio, and font references used by the changed screen resolve to existing files. Check the `/favicon.svg` reference against its actual location.
+- Review image and audio assets used by the app for suitability and file size. Prefer appropriately sized media, and remove an asset only after checking that no page, component, or other project file still references it.
+- Review external font or script references in the affected code. Confirm that each is intentional and still used; keep a suitable fallback for externally loaded fonts where applicable. Do not add remote dependencies merely for convenience.
 - Inspect the affected screen at a narrow phone-sized viewport and a wide desktop-sized viewport. Look for clipped content, overlapping controls, and hard-to-read finance values.
 - If the change affects analytics or amounts, review displayed values against the integer-paise convention.
 - For Android-specific changes, review them with the relevant Android toolchain; the web preview alone does not cover native Android work.
