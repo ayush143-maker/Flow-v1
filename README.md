@@ -64,3 +64,10 @@ Native Android work is separate: a web build or browser preview does not verify 
 Keep each change scoped to the relevant screen, component, service, or configuration. Preserve existing filenames and relative references unless the change requires moving a file; when a path changes, update the references that depend on it. In the handoff, summarize what changed and identify the affected files or app areas.
 
 Before publishing, manually review the result in the app: open the affected screens and interactions, check relevant layouts at narrow and wide viewports, and verify any finance values against the integer-paise convention. For Android-specific changes, review the native work separately. This is a review checklist, not a report of completed checks or results.
+
+## Final release review
+
+- Check that `index.html` still points to the intended application entry module before publishing.
+- Check the scripts and dependency versions in `package.json`; use the repository's declared workflow rather than assuming a generic build command.
+- Verify local references such as `/favicon.svg` resolve with the same relative paths after publishing.
+- Review the published result once on a narrow screen and once on a wider screen; treat this as a release check, not an automated test report.
