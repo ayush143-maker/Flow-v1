@@ -17,7 +17,7 @@ Use the app's navigation to review the screens and finance views affected by you
     npm test
     npm run build
 
-Native Android work requires the relevant Android toolchain and is separate from the web preview.
+Native Android work requires the relevant Android toolchain and is separate from the web preview. The documented setup covers local development; no deployment target or production hosting configuration is specified.
 
 ## Where to look
 
