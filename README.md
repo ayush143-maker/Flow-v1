@@ -80,3 +80,20 @@ Before publishing, manually review the result in the app: open the affected scre
 - `package.json` — package manifest, dependency list, and declared scripts.
 - `scripts` — project scripts directory.
 - `src` — source-code directory.
+
+## Package scripts
+
+The following scripts are declared in the repository's `package.json`. Their presence documents the configured commands; it does not mean they have been executed or passed.
+
+| Script | Command | Purpose |
+|---|---|---|
+| `dev` | `npm run dev` | Starts the development server. |
+| `typecheck` | `npm run typecheck` | Runs the configured TypeScript check. |
+| `build` | `npm run build` | Runs the configured production build command. |
+| `preview` | `npm run preview` | Starts the local preview for the production build. |
+| `icons` | `npm run icons` | Runs the repository's icon-generation script. |
+| `cap:sync` | `npm run cap:sync` | Builds the web app and synchronizes the Android Capacitor project. |
+| `overlay` | `npm run overlay` | Runs the Android overlay application script. |
+| `test` | `npm run test` | Runs Node's built-in test runner. |
+
+The package manifest specifies Node.js `>=20` in its `engines` field.
