@@ -19,7 +19,7 @@ npm test
 npm run build
 ```
 
-These are available commands, not reported results. Native Android work associated with `capacitor.config.ts` and `android-overlay/` is separate from the web preview. No deployment target or production hosting configuration is specified.
+These are available commands, not reported results. Native Android work associated with `capacitor.config.ts` and `android-overlay/` is separate from the web preview.
 
 ## Code map
 
@@ -36,7 +36,7 @@ Amounts are represented as integer paise in the domain model. Preserve this conv
 
 For visible copy or appearance, start with the relevant screen in `src/screens/` and check `src/components/` for shared UI. For settings changes, review the existing settings screen and navigation before adding another entry point.
 
-The page references `/favicon.svg`, a root-relative path. Keep that reference if the favicon remains at the site root; if its location changes, update the reference to match. Review `index.html` and the app after changing page metadata or the icon reference. Root-relative URLs may need particular attention if the app is hosted below a domain subpath.
+The page references `/favicon.svg`, a root-relative path. Keep that reference if the favicon remains at the site root. If the app will be served from a domain subpath, check whether this root-relative reference resolves correctly there; update the reference and its asset location together if needed. Review `index.html` and the app after changing page metadata or the icon reference.
 
 ## Data and configuration
 
@@ -44,8 +44,23 @@ The app persists finance state locally. Treat transaction and account-related da
 
 `vite.config.ts`, `tsconfig.json`, and `capacitor.config.ts` are tracked project configuration, not places to store credentials. No `.env.example` or backend configuration is listed. Do not add real secrets to tracked files; values included in a client build are delivered to users and cannot be treated as secret.
 
+## Deployment-readiness checklist
+
+The repository has a Vite build command, but this README does not specify a hosting target or confirm a deployment. Before publishing the web app:
+
+- [ ] Work from the project root, where `package.json`, `index.html`, and `vite.config.ts` are present.
+- [ ] Run the available `npm run build` command and check its output for errors; this README does not report a successful build.
+- [ ] Check `vite.config.ts` and the build output to identify the actual generated output directory. Do not assume a directory name if the Vite configuration changes it.
+- [ ] Ensure the published files come from that generated output directory, rather than publishing the source tree as though it were the built app.
+- [ ] Check asset references, especially `/favicon.svg`. Root-relative URLs may need adjustment when the app is served below a domain subpath; keep references and actual asset locations consistent.
+- [ ] No environment-variable template is listed, so this checklist does not require environment configuration. Do not invent values or place secrets in client-side configuration.
+- [ ] After publishing, open the resulting page in a browser and review the app navigation, affected screens, favicon, and layouts at narrow and wide viewports. Check any finance values against the integer-paise convention.
+- [ ] Treat this final browser review as a recommendation to perform after publishing, not as a report that a deployment or review has already occurred.
+
+Native Android work is separate: a web build or browser preview does not verify the Android work associated with `capacitor.config.ts` and `android-overlay/`.
+
 ## Contributor handoff
 
 Keep each change scoped to the relevant screen, component, service, or configuration. Preserve existing filenames and relative references unless the change requires moving a file; when a path changes, update the references that depend on it. In the handoff, summarize what changed and identify the affected files or app areas.
 
-Before publishing, manually review the result in the app: open the affected screens and interactions, check relevant layouts at narrow and wide viewports, and verify any finance values against the integer-paise convention. For Android-specific changes, review the native work separately; a web preview does not verify it. This is a review checklist, not a report of completed checks or results.
+Before publishing, manually review the result in the app: open the affected screens and interactions, check relevant layouts at narrow and wide viewports, and verify any finance values against the integer-paise convention. For Android-specific changes, review the native work separately. This is a review checklist, not a report of completed checks or results.
