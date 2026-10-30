@@ -2,7 +2,7 @@
 
 Flow-v1 is an earlier, more developed iteration of Flow: a local-first personal-finance app built with React, TypeScript, Vite, and Capacitor. It includes transaction management, spending insights, categories, recurring-payment views, onboarding, settings, and screen navigation. Application state is persisted locally; no remote backend is described.
 
-The main application code is in `src/`. The top-level `package.json` provides the project scripts, while `vite.config.ts` and `tsconfig.json` configure Vite and TypeScript. `capacitor.config.ts` and `android-overlay/` are associated with native Android work. The repository also includes `docs/`, `scripts/`, `snapshots/`, and `tests/`.
+The main application code is in `src/`. The top-level `index.html` is the page entry and loads `/src/main.tsx`. The top-level `package.json` provides project scripts, while `vite.config.ts` and `tsconfig.json` configure Vite and TypeScript. `capacitor.config.ts` and `android-overlay/` are associated with native Android work. The repository also includes `docs/`, `scripts/`, `snapshots/`, and `tests/`.
 
 ## Run locally
 
@@ -39,6 +39,15 @@ For visible app copy or appearance, start in the relevant screen under `src/scre
 
 The page references `/favicon.svg`. Preserve that root-relative path if the favicon remains at the site root. If the icon moves, update the reference to match; if the app is hosted below a domain subpath, verify that the root-relative URL still points to the intended file. Review `index.html` and the app after changing page metadata or the icon reference.
 
+## Troubleshooting
+
+Use these as diagnostic steps, not as claims that the project currently has a problem:
+
+1. **Confirm the entry page.** Start the Vite development server from the project directory and load the app served from that project. The top-level `index.html` loads `/src/main.tsx`; opening a different page or serving a different directory will not preview this entry.
+2. **Check paths and local files.** Keep references aligned with files' locations. In particular, `/favicon.svg` is root-relative and expects the favicon at the site root. If a local asset request fails, check both that the file exists and that the reference matches its actual path.
+3. **Inspect browser diagnostics.** Check the console for load or runtime errors. In the Network panel, inspect failed requests and the requested URLs to distinguish a missing local file or incorrect path from another loading issue.
+4. **Separate local from external resources.** A failed request for a local project asset points to a path or availability check; a failed request to an external host depends on that resource and network access. The README identifies the favicon reference but does not identify a required remote service.
+
 ## Configuration and data handling
 
 The repository includes project configuration such as `vite.config.ts`, `tsconfig.json`, and `capacitor.config.ts`; these are tracked configuration files, not places to store credentials. No `.env.example` or backend configuration is listed here. Do not add real secrets to tracked files. If local tooling ever requires private values, keep them outside version control and document only placeholders or setup guidance, without publishing the values.
@@ -50,9 +59,7 @@ The app persists finance state locally. Treat real transaction and account-relat
 This is a checklist for future review, not a report of completed compatibility testing or verified results.
 
 - Run the app locally and review the changed screen and its relevant transaction, settings, or onboarding interactions.
-- Test in current versions of the browsers relevant to the app's intended audience and stack. Include mobile and desktop browsers where both are relevant; do not infer native Android behavior from a web-browser preview.
-- Inspect the browser console for errors and warnings while loading the app and using the changed flow. Investigate errors rather than treating a visible screen as proof that the flow works.
-- Inspect the Network panel for failed or unexpectedly repeated requests. Check that local images, fonts, audio, and other referenced assets resolve, and verify that the `/favicon.svg` request reaches the intended file. Review any remote requests introduced by the change and confirm they are intentional.
+- Test in current versions of browsers relevant to the app's intended audience and stack. Include mobile and desktop browsers where both are relevant; do not infer native Android behavior from a web-browser preview.
 - Check the app at a narrow phone-sized viewport and a wide desktop-sized viewport. Look for clipped content, overlapping controls, difficult-to-read finance values, and interactions that are awkward at either size.
 - If a change affects analytics or amounts, review displayed values against the integer-paise convention.
 - For Android-specific changes, review them with the relevant Android toolchain; the web preview alone does not cover native Android work.
