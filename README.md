@@ -39,6 +39,12 @@ For visible app copy or appearance, start in the relevant screen under `src/scre
 
 The page references `/favicon.svg`. Preserve that root-relative path if the favicon remains at the site root. If the icon moves, update the reference to match; if the app is hosted below a domain subpath, verify that the root-relative URL still points to the intended file. Review `index.html` and the app after changing page metadata or the icon reference.
 
+## Configuration and data handling
+
+The repository includes project configuration such as `vite.config.ts`, `tsconfig.json`, and `capacitor.config.ts`; these are tracked configuration files, not places to store credentials. No `.env.example` or backend configuration is listed here. Do not add real secrets to tracked files. If local tooling ever requires private values, keep them outside version control and document only placeholders or setup guidance, without publishing the values.
+
+The app persists finance state locally. Treat real transaction and account-related data as sensitive: use fictional data when documenting, sharing screenshots, or preparing examples, and review `src/services/store/` before changing persistence behavior. This README does not describe remote syncing or a backup mechanism. Values included in the client build are delivered to users and cannot be treated as secret.
+
 ## Browser and platform review checklist
 
 This is a checklist for future review, not a report of completed compatibility testing or verified results.
