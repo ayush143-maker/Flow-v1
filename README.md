@@ -4,7 +4,7 @@ Flow-v1 is an earlier, more developed iteration of Flow, a local-first personal-
 
 ## Run locally
 
-Install dependencies and start the Vite development server:
+From the project directory, install dependencies and start the Vite development server:
 
     npm install
     npm run dev
