@@ -32,3 +32,9 @@ Native Android work requires the relevant Android toolchain and is separate from
 - `src/navigation/` defines the navigation structure.
 
 Amounts are represented as integer paise in the domain model. Preserve this convention when changing transaction or analytics logic.
+
+## Personalizing the interface
+
+For visible app copy or appearance, start in the relevant screen under `src/screens/` and check `src/components/` for shared UI. For settings-related changes, review the existing settings screen and navigation rather than adding a separate entry point without checking the app's current structure. Keep finance labels consistent with the integer-paise convention.
+
+The page references `/favicon.svg`. This is a root-relative URL, so preserve it if the favicon stays at that path; if you change the reference, keep it in sync with the favicon's actual location. Review `index.html` and the app after changing page-level metadata or the icon reference.
