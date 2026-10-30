@@ -71,3 +71,12 @@ Before publishing, manually review the result in the app: open the affected scre
 - Check the scripts and dependency versions in `package.json`; use the repository's declared workflow rather than assuming a generic build command.
 - Verify local references such as `/favicon.svg` resolve with the same relative paths after publishing.
 - Review the published result once on a narrow screen and once on a wider screen; treat this as a release check, not an automated test report.
+
+## Repository map
+
+- `capacitor.config.ts` — Capacitor configuration file.
+- `docs` — project documentation directory.
+- `index.html` — HTML page entry point.
+- `package.json` — package manifest, dependency list, and declared scripts.
+- `scripts` — project scripts directory.
+- `src` — source-code directory.
