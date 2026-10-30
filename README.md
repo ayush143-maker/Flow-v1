@@ -41,11 +41,21 @@ The page references `/favicon.svg`. Preserve that root-relative path if the favi
 
 ## Manual review checklist
 
-Use this checklist after relevant changes; it records actions to perform, not verified results.
+Use these actions after relevant changes; they are review steps to perform, not verified results.
 
-- Open the app using the local Vite preview and navigate to the screen or flow affected by the change.
-- Try the relevant existing navigation and screen interactions, including any transaction, settings, or onboarding flow touched by the change.
+- Open the app using the local Vite preview and navigate to the screen or flow affected by the change. Try relevant transaction, settings, or onboarding interactions.
 - Check that referenced images or other media load from their paths. For page-level icon changes, check that the `/favicon.svg` reference matches the file location.
 - Inspect the affected screen at a narrow phone-sized viewport and a wide desktop-sized viewport. Look for clipped content, overlapping controls, and hard-to-read finance values.
-- If the change affects analytics or amounts, review the displayed values against the integer-paise convention.
+- If the change affects analytics or amounts, review displayed values against the integer-paise convention.
 - For Android-specific changes, review them with the relevant Android toolchain; the web preview alone does not cover native Android work.
+
+## Accessibility review checklist
+
+After changes to screens or shared components, use these as future checks; this checklist does not claim that accessibility has been verified.
+
+- Navigate the affected flow using only a keyboard. Check that navigation items and relevant transaction, settings, onboarding, and other controls can receive focus and be operated without a pointer.
+- Watch the focus indicator as you move through controls. Check that it remains visible against the screen's backgrounds and is not obscured by overlays or clipped content.
+- Review controls and fields for meaningful accessible names. Check that labels identify actions and inputs clearly, including controls whose visible content is an icon.
+- Check text and control contrast on the affected screens, including finance values, secondary labels, and text over colored surfaces.
+- If the screen includes images or other meaningful visual content, check that alternatives convey the relevant information; treat purely decorative imagery so it does not add redundant announcements.
+- If a change adds or alters animation or transitions, check the affected flow with reduced motion requested and consider whether nonessential motion can be reduced or removed.
