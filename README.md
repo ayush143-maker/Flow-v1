@@ -1,15 +1,30 @@
 # Flow-v1
 
-An earlier Flow personal-finance app iteration using React, Vite, and Capacitor, with Android wrapper/build support and local-first positioning.
+Flow-v1 is an earlier, more developed iteration of **Flow**, a local-first personal-finance app built with React, TypeScript, Vite, and Capacitor. It brings together transaction management, spending insights, categories, recurring-payment views, onboarding, settings, and the navigation that connects those screens.
+
+The application keeps its main responsibilities separated: screen components handle presentation, analytics helpers derive spending summaries, and the store layer manages locally persisted data. The Android wrapper and overlay files support the native side of the project.
 
 ## Run locally
 
-Install dependencies with npm install, then run npm run dev for the web app. Use the Android scripts included in package.json for a native build; an Android SDK and Java toolchain may be required.
+Install dependencies and start the Vite development server:
 
-## Development workflow
+    npm install
+    npm run dev
 
-Start with the package scripts and the existing source organization. Locate the page or screen component and its imports before changing the UI. Keep shared components and styles consistent rather than duplicating the same behavior in multiple places.
+The package also provides:
 
-## Validation
+    npm run typecheck
+    npm run build
+    npm test
 
-Run the development server while iterating, then run the production build before deployment. Check type/build output, browser-console messages, navigation, and the final deployed page. Native-wrapper projects also need a separate on-device test after syncing the web build.
+The build command creates the web bundle. Native Android work requires the relevant Android toolchain and should be handled separately from web preview.
+
+## Where to look
+
+- src/screens/ contains the main app screens.
+- src/components/ holds reusable interface components.
+- src/services/analytics/ contains spending and trend calculations.
+- src/services/store/ handles application state and persistence.
+- src/navigation/ defines the app's navigation structure.
+
+Amounts are represented in integer paise in the domain model. Keep that convention intact when changing transaction or analytics logic.
