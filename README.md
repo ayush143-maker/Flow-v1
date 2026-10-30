@@ -21,7 +21,7 @@ npm test
 npm run build
 ```
 
-These commands are available checks, not reported results. Native Android work requires the relevant Android toolchain and is separate from the web preview. No deployment target or production hosting configuration is specified.
+These are available commands, not reported results. Native Android work requires the relevant Android toolchain and is separate from the web preview. No deployment target or production hosting configuration is specified.
 
 ## Code map
 
@@ -35,29 +35,29 @@ Amounts are represented as integer paise in the domain model. Preserve this conv
 
 ## Personalizing the interface
 
-For visible app copy or appearance, start in the relevant screen under `src/screens/` and check `src/components/` for shared UI. For settings-related changes, review the existing settings screen and navigation rather than adding a separate entry point without checking the app's current structure. Keep finance labels consistent with the integer-paise convention.
+For visible app copy or appearance, start in the relevant screen under `src/screens/` and check `src/components/` for shared UI. For settings-related changes, review the existing settings screen and navigation before adding another entry point. Keep finance labels consistent with the integer-paise convention.
 
-The page references `/favicon.svg`. Preserve that root-relative path if the favicon remains there; if it moves, update the reference to match. Review `index.html` and the app after changing page-level metadata or the icon reference.
+The page references `/favicon.svg`. Preserve that root-relative path if the favicon remains at the site root. If the icon moves, update the reference to match; if the app is hosted below a domain subpath, verify that the root-relative URL still points to the intended file. Review `index.html` and the app after changing page metadata or the icon reference.
 
-## Manual review checklist
+## Browser and platform review checklist
 
-Use these actions after relevant changes. This is a review checklist, not a report of completed checks or measured performance.
+This is a checklist for future review, not a report of completed compatibility testing or verified results.
 
-- Open the app using the local Vite preview and navigate to the screen or flow affected by the change. Try relevant transaction, settings, or onboarding interactions.
-- Check that local image, audio, and font references used by the changed screen resolve to existing files. Check the `/favicon.svg` reference against its actual location.
-- Review image and audio assets used by the app for suitability and file size. Prefer appropriately sized media, and remove an asset only after checking that no page, component, or other project file still references it.
-- Review external font or script references in the affected code. Confirm that each is intentional and still used; keep a suitable fallback for externally loaded fonts where applicable. Do not add remote dependencies merely for convenience.
-- Inspect the affected screen at a narrow phone-sized viewport and a wide desktop-sized viewport. Look for clipped content, overlapping controls, and hard-to-read finance values.
-- If the change affects analytics or amounts, review displayed values against the integer-paise convention.
+- Run the app locally and review the changed screen and its relevant transaction, settings, or onboarding interactions.
+- Test in current versions of the browsers relevant to the app's intended audience and stack. Include mobile and desktop browsers where both are relevant; do not infer native Android behavior from a web-browser preview.
+- Inspect the browser console for errors and warnings while loading the app and using the changed flow. Investigate errors rather than treating a visible screen as proof that the flow works.
+- Inspect the Network panel for failed or unexpectedly repeated requests. Check that local images, fonts, audio, and other referenced assets resolve, and verify that the `/favicon.svg` request reaches the intended file. Review any remote requests introduced by the change and confirm they are intentional.
+- Check the app at a narrow phone-sized viewport and a wide desktop-sized viewport. Look for clipped content, overlapping controls, difficult-to-read finance values, and interactions that are awkward at either size.
+- If a change affects analytics or amounts, review displayed values against the integer-paise convention.
 - For Android-specific changes, review them with the relevant Android toolchain; the web preview alone does not cover native Android work.
 
 ## Accessibility review checklist
 
-After changes to screens or shared components, use these as future checks; this checklist does not claim that accessibility has been verified.
+These are future checks, not claims that accessibility has been verified.
 
-- Navigate the affected flow using only a keyboard. Check that navigation items and relevant transaction, settings, onboarding, and other controls can receive focus and be operated without a pointer.
-- Watch the focus indicator as you move through controls. Check that it remains visible against the screen's backgrounds and is not obscured by overlays or clipped content.
-- Review controls and fields for meaningful accessible names. Check that labels identify actions and inputs clearly, including controls whose visible content is an icon.
-- Check text and control contrast on the affected screens, including finance values, secondary labels, and text over colored surfaces.
-- If the screen includes images or other meaningful visual content, check that alternatives convey the relevant information; treat purely decorative imagery so it does not add redundant announcements.
-- If a change adds or alters animation or transitions, check the affected flow with reduced motion requested and consider whether nonessential motion can be reduced or removed.
+- Navigate the affected flow using only a keyboard. Check that relevant controls can receive focus and be operated without a pointer.
+- Check that focus remains visible and is not obscured by overlays or clipped content.
+- Review controls and fields for meaningful accessible names, including icon-only controls.
+- Check text and control contrast on the affected screens, including secondary labels and text over colored surfaces.
+- Check alternatives for meaningful images and ensure decorative imagery does not add redundant announcements.
+- If a change adds or alters animation, review it with reduced motion requested and consider reducing nonessential motion.
